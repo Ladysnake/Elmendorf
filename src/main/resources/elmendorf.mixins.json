@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "io.github.ladysnake.elmendorf.impl.mixin",
+  "compatibilityLevel": "JAVA_16",
+  "mixins": [
+    "flakyfix.GameTestStateMixin",
+    "flakyfix.TestManagerMixin",
+    "flakyfix.TestSetMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

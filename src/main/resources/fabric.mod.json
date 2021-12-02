@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "elmendorf",
+  "version": "${version}",
+
+  "name": "Elmendorf",
+  "description": "Testing helper for Fabric mods",
+  "authors": [
+    "Pyrofab"
+  ],
+  "contact": {
+    "homepage": "https://ladysnake.github.io",
+    "sources": "https://github.com/Ladysnake/Elmendorf"
+  },
+
+  "license": "MIT",
+  "icon": "assets/elmendorf/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+
+  },
+  "mixins": [
+    "elmendorf.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.11.3",
+    "fabric": "*",
+    "minecraft": "1.18.x",
+    "java": ">=17"
+  }
+}
