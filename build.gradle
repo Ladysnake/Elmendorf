@@ -95,4 +95,5 @@ license {
 	}
 }
 
+apply from: 'utilities.gradle'
 apply from: 'release.gradle'
