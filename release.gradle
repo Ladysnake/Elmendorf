@@ -59,7 +59,7 @@ artifactory {
     }
 }
 
-artifactoryPublish.dependsOn(checkGitStatus)
+//artifactoryPublish.dependsOn(checkGitStatus)
 artifactoryPublish.dependsOn build
 
 task release(dependsOn: [tasks.publish, tasks.githubRelease, tasks.artifactoryPublish]) {

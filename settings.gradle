@@ -16,3 +16,5 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+
+rootProject.name = 'elmendorf'

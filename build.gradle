@@ -14,9 +14,42 @@ plugins {
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
-archivesBaseName = project.mod_name
+archivesBaseName = project.archives_base_name
 version = project.mod_version
 group = project.maven_group
+
+sourceSets {
+	testmod {
+		compileClasspath += main.compileClasspath
+		runtimeClasspath += main.runtimeClasspath
+	}
+}
+
+loom {
+	runs {
+		gametest {
+			server()
+			ideConfigGenerated true
+			source sourceSets.testmod
+
+			name "Elmendorf Game Test"
+
+			// Enable the gametest runner
+			vmArg "-Dfabric-api.gametest"
+			vmArg "-Dfabric-api.gametest.report-file=${project.buildDir}/junit.xml"
+			runDir "build/gametest"
+		}
+		autoTestServer {
+			server()
+			ideConfigGenerated true
+			source sourceSets.testmod
+
+			name "Auto Test Server"
+
+			vmArg "-Dfabric.autoTest"
+		}
+	}
+}
 
 repositories {
 	// Add repositories to retrieve artifacts from in here.
@@ -34,6 +67,8 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	api 'junit:junit:4.13'
+	testmodImplementation sourceSets.main.output
 }
 
 processResources {

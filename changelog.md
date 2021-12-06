@@ -1,4 +1,11 @@
 ------------------------------------------------------
+Version 0.2.0
+------------------------------------------------------
+**Additions**
+- Added a test framework for clientbound packet sending
+- Added some helper methods for assertions
+
+------------------------------------------------------
 Version 0.1.1
 ------------------------------------------------------
 **Additions**
