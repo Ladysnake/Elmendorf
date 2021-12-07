@@ -34,12 +34,12 @@ import org.junit.Assert;
 import org.junit.function.ThrowingRunnable;
 
 import java.util.UUID;
-import java.util.concurrent.Callable;
 
 public final class GameTestUtil {
     public static void assertTrue(String errorMessage, boolean b) {
         if (!b) throw new GameTestException(errorMessage);
     }
+
     public static void assertFalse(String errorMessage, boolean b) {
         if (b) throw new GameTestException(errorMessage);
     }

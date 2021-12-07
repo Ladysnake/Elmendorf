@@ -21,42 +21,49 @@
  */
 package io.github.ladysnake.elmendorf.impl;
 
+import io.github.ladysnake.elmendorf.ByteBufChecker;
 import io.github.ladysnake.elmendorf.ConnectionChecker;
 import io.github.ladysnake.elmendorf.ConnectionTestConfiguration;
 import io.github.ladysnake.elmendorf.GameTestUtil;
+import io.github.ladysnake.elmendorf.PacketChecker;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.Packet;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.test.GameTestException;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
-public class MockClientConnection extends ClientConnection implements ConnectionChecker, ConnectionTestConfiguration {
-    private final Queue<Packet<?>> packetQueue = new ArrayDeque<>();
+public final class MockClientConnection extends ClientConnection implements ConnectionChecker, ConnectionTestConfiguration {
+    private final List<SentPacket> packetQueue = new ArrayList<>();
     private boolean flushEachTick;
+    private int ticks;
 
     public MockClientConnection(NetworkSide side) {
         super(side);
     }
 
     @Override
-    public void toFlushPacketsEachTick() {
-        this.flushEachTick = true;
+    public void toFlushPacketsEachTick(boolean flush) {
+        this.flushEachTick = flush;
     }
 
     @Override
     public void tick() {
         super.tick();
+        this.ticks++;
         if (this.flushEachTick) {
             this.packetQueue.clear();
         }
@@ -73,15 +80,43 @@ public class MockClientConnection extends ClientConnection implements Connection
     }
 
     @Override
+    public PacketChecker sent(Identifier channelId, Consumer<ByteBufChecker> expect) {
+        List<GameTestException> suppressed = new ArrayList<>();
+        try {
+            return sent(createCheckerTest(channelId, expect, suppressed), "Expected packet for channel " + channelId);
+        } catch (GameTestException e) {
+            suppressed.forEach(e::addSuppressed);
+            throw e;
+        }
+    }
+
+    @NotNull
+    private static Predicate<Packet<?>> createCheckerTest(Identifier channelId, Consumer<ByteBufChecker> expect, List<GameTestException> suppressed) {
+        return packet -> {
+            if (packet instanceof CustomPayloadS2CPacket p && Objects.equals(p.getChannel(), channelId)) {
+                var checker = new ByteBufChecker(p.getData());
+                try {
+                    expect.accept(checker);
+                    return true;
+                } catch (GameTestException e) {
+                    suppressed.add(e);
+                    return false;
+                }
+            }
+            return false;
+        };
+    }
+
+    @Override
     public PacketChecker sent(Predicate<Packet<?>> test, String errorMessage) {
-        List<Packet<?>> packets = this.packetQueue.stream().filter(test).toList();
+        var packets = this.packetQueue.stream().filter(p -> test.test(p.packet)).toList();
         GameTestUtil.assertFalse(errorMessage, packets.isEmpty());
-        return new PacketChecker(packets, errorMessage);
+        return new PacketCheckerImpl(errorMessage, packets);
     }
 
     @Override
     public void sentPackets(Consumer<Queue<Packet<?>>> test) {
-        test.accept(this.packetQueue);
+        test.accept(this.packetQueue.stream().map(p -> p.packet).collect(Collectors.toCollection(ArrayDeque::new)));
     }
 
     @Override
@@ -91,11 +126,93 @@ public class MockClientConnection extends ClientConnection implements Connection
 
     @Override
     public void send(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> callback) {
-        this.packetQueue.add(packet);
+        this.packetQueue.add(new SentPacket(packet, this.ticks));
     }
 
-    public Queue<Packet<?>> getPacketQueue() {
-        return packetQueue;
+    public record PacketCheckerImpl(String defaultErrorMessage, List<SentPacket> packets) implements PacketChecker {
+
+        @Override
+        public PacketChecker atLeast(int times) {
+            GameTestUtil.assertTrue("%s to be sent at least %d times, was %d".formatted(defaultErrorMessage, times, this.packets.size()), this.packets.size() >= times);
+            return this;
+        }
+
+        @Override
+        public PacketChecker atLeast(String errorMessage, int times) {
+            GameTestUtil.assertTrue(errorMessage, this.packets.size() >= times);
+            return this;
+        }
+
+        @Override
+        public PacketChecker exactly(int times) {
+            GameTestUtil.assertTrue("%s to be sent %d times, was %d".formatted(defaultErrorMessage, times, this.packets.size()), this.packets.size() == times);
+            return this;
+        }
+
+        @Override
+        public PacketChecker exactly(String errorMessage, int times) {
+            GameTestUtil.assertTrue(errorMessage, this.packets.size() == times);
+            return this;
+        }
+
+        @Override
+        public PacketChecker thenSent(Delay delay, Class<? extends Packet<?>> packetType) {
+            return thenSent(delay, packetType::isInstance, "Expected packet of type " + packetType.getTypeName());
+        }
+
+        @Override
+        public PacketChecker thenSent(Delay delay, Identifier channelId) {
+            return thenSent(delay, packet -> packet instanceof CustomPayloadS2CPacket p && Objects.equals(p.getChannel(), channelId), "Expected packet for channel " + channelId);
+        }
+
+        @Override
+        public PacketChecker thenSent(Delay delay, Identifier channelId, Consumer<ByteBufChecker> expect) {
+            List<GameTestException> suppressed = new ArrayList<>();
+            try {
+                return this.thenSent(delay, createCheckerTest(channelId, expect, suppressed), "Expected packet for channel " + channelId);
+            } catch (GameTestException e) {
+                suppressed.forEach(e::addSuppressed);
+                throw e;
+            }
+        }
+
+        @Override
+        public PacketChecker thenSent(Delay delay, Predicate<Packet<?>> test, String errorMessage) {
+            var packets = this.packets().stream().map(p -> p.next(delay, test)).filter(Objects::nonNull).toList();
+            GameTestUtil.assertFalse(errorMessage, packets.isEmpty());
+            return new PacketCheckerImpl(errorMessage, packets);
+        }
     }
 
+    public class SentPacket {
+        final Packet<?> packet;
+        final int tick;
+
+        public SentPacket(Packet<?> packet, int tick) {
+            this.packet = packet;
+            this.tick = tick;
+        }
+
+        public @Nullable SentPacket next(PacketChecker.Delay delay, Predicate<Packet<?>> test) {
+            SentPacket successor;
+            for (var it = packetQueue.listIterator(packetQueue.indexOf(this) + 1); it.hasNext();) {
+                successor = it.next();
+
+                if (switch (delay) {
+                    case IMMEDIATELY, SAME_TICK -> successor.tick == this.tick;
+                    case LATER -> true;
+                } && test.test(successor.packet)) {
+                    return successor;
+                }
+
+                if (switch (delay) {
+                    case IMMEDIATELY -> true;
+                    case SAME_TICK -> successor.tick != this.tick;
+                    case LATER -> false;
+                }) break;
+            }
+
+            return null;
+        }
+    }
 }

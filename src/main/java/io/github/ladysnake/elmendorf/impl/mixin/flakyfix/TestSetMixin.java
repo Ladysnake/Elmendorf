@@ -41,9 +41,10 @@ public abstract class TestSetMixin {
 
     @Inject(method = "isDone", at = @At("HEAD"))
     private void replaceTestStates(CallbackInfoReturnable<Boolean> cir) {
-        for (ListIterator<GameTestState> it = ((List<GameTestState>)this.tests).listIterator(); it.hasNext(); ) {
-            GameTestState test = it.next();
-            GameTestState replacement = ((FixedGameTestState) test).cs$getReplacementGameTest();
+        for (var it = ((List<GameTestState>)this.tests).listIterator(); it.hasNext(); ) {
+            var test = it.next();
+            var replacement = ((FixedGameTestState) test).cs$getReplacementGameTest();
+
             if (replacement != test) {
                 it.set(replacement);
             }

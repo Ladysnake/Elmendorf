@@ -24,7 +24,6 @@ package io.github.ladysnake.elmendorf;
 import net.minecraft.network.Packet;
 import net.minecraft.util.Identifier;
 
-import java.util.List;
 import java.util.Queue;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -34,33 +33,10 @@ public interface ConnectionChecker {
 
     PacketChecker sent(Identifier channelId);
 
+    PacketChecker sent(Identifier channelId, Consumer<ByteBufChecker> expect);
+
     PacketChecker sent(Predicate<Packet<?>> test, String errorMessage);
 
     void sentPackets(Consumer<Queue<Packet<?>>> test);
 
-    final class PacketChecker {
-        private final List<Packet<?>> packets;
-        private final String defaultErrorMessage;
-
-        public PacketChecker(List<Packet<?>> packets, String defaultErrorMessage) {
-            this.packets = packets;
-            this.defaultErrorMessage = defaultErrorMessage;
-        }
-
-        public void atLeast(int times) {
-            GameTestUtil.assertTrue("%s to be sent at least %d times, was %d".formatted(defaultErrorMessage, times, this.packets.size()), this.packets.size() >= times);
-        }
-
-        public void atLeast(String errorMessage, int times) {
-            GameTestUtil.assertTrue(errorMessage, this.packets.size() >= times);
-        }
-
-        public void exactly(int times) {
-            GameTestUtil.assertTrue("%s to be sent %d times, was %d".formatted(defaultErrorMessage, times, this.packets.size()), this.packets.size() == times);
-        }
-
-        public void exactly(int times, String errorMessage) {
-            GameTestUtil.assertTrue(errorMessage, this.packets.size() == times);
-        }
-    }
 }

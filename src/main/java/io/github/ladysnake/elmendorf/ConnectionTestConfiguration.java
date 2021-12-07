@@ -22,5 +22,5 @@
 package io.github.ladysnake.elmendorf;
 
 public interface ConnectionTestConfiguration {
-    void toFlushPacketsEachTick();
+    void toFlushPacketsEachTick(boolean flush);
 }
