@@ -21,6 +21,9 @@
  */
 package io.github.ladysnake.ripstop;
 
+import dev.onyxstudios.cca.api.v3.component.Component;
+import dev.onyxstudios.cca.api.v3.component.ComponentRegistry;
+import io.github.ladysnake.elmendorf.ByteBufChecker;
 import io.github.ladysnake.elmendorf.GameTestUtil;
 import io.github.ladysnake.elmendorf.PacketChecker;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
@@ -39,38 +42,39 @@ import static io.github.ladysnake.elmendorf.ByteBufChecker.any;
 public class RipstopTestSuite implements FabricGameTest {
     @GameTest(structureName = EMPTY_STRUCTURE)
     public void testPacketChecks(TestContext ctx) {
-        var player = GameTestUtil.spawnPlayer(ctx, 5, 5, 5);
+        var player = ctx.spawnServerPlayer(5, 5, 5);
         player.networkHandler.sendPacket(new ClearTitleS2CPacket(true));
         player.networkHandler.sendPacket(new ClearTitleS2CPacket(false));
-        GameTestUtil.verifyConnection(player).sent(ClearTitleS2CPacket.class).atLeast(2);
+        ctx.verifyConnection(player, conn -> conn.sent(ClearTitleS2CPacket.class).atLeast(2));
         GameTestUtil.assertThrows(GameTestException.class,
-                () -> GameTestUtil.verifyConnection(player).sent(new Identifier("ribbit")));
+                () -> ctx.verifyConnection(player, conn -> conn.sent(new Identifier("ribbit"))));
         var buf = PacketByteBufs.create();
         buf.writeBlockPos(BlockPos.ORIGIN);
         buf.writeString("test");
         player.networkHandler.sendPacket(ServerPlayNetworking.createS2CPacket(new Identifier("a"), buf));
-        GameTestUtil.verifyConnection(player).sent(new Identifier("a"), c -> c.checkBlockPos(any()).checkString("test").noMoreData());
+        ctx.verifyConnection(player, conn -> conn.sent(new Identifier("a"), c -> c.checkBlockPos(any()).checkString("test").noMoreData()));
         GameTestUtil.assertThrows(GameTestException.class,
-                () -> GameTestUtil.verifyConnection(player).sent(new Identifier("a"), c -> c.checkBoolean(false).noMoreData()));
+                () -> ctx.verifyConnection(player, conn -> conn.sent(new Identifier("a"), c -> c.checkBoolean(false).noMoreData())));
+        ctx.complete();
     }
 
     @GameTest(structureName = EMPTY_STRUCTURE)
     public void testPacketSequenceChecks(TestContext ctx) {
-        var player = GameTestUtil.spawnPlayer(ctx, 5, 5, 5);
+        var player = ctx.spawnServerPlayer(5, 5, 5);
         player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(1, BlockPos.ORIGIN, 3));
         player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(1, BlockPos.ORIGIN, 4));
         player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(1, BlockPos.ORIGIN, 5));
         var buf1 = PacketByteBufs.create();
         buf1.writeBoolean(true);
         player.networkHandler.sendPacket(ServerPlayNetworking.createS2CPacket(new Identifier("a"), buf1));
-        GameTestUtil.verifyConnection(player)
-                .sent(BlockBreakingProgressS2CPacket.class)
+        ctx.verifyConnection(player, conn ->
+                conn.sent(BlockBreakingProgressS2CPacket.class)
                 // 3 matching packets
                 .thenSent(PacketChecker.Delay.IMMEDIATELY, BlockBreakingProgressS2CPacket.class)
                 // 2 matching packets: the last BlockBreaking packet is logically not followed by another one
                 .thenSent(PacketChecker.Delay.SAME_TICK, new Identifier("a"), c -> c.checkBoolean(true).noMoreData())
                 // still 2 matching packets: all BlockBreaking packets are followed by the custom packet in the same tick
-                .exactly(2);
+                .exactly(2));
         ctx.complete();
     }
 }

@@ -21,19 +21,15 @@
  */
 package io.github.ladysnake.elmendorf;
 
-import com.mojang.authlib.GameProfile;
 import io.github.ladysnake.elmendorf.impl.MockClientConnection;
-import net.minecraft.network.NetworkSide;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.test.GameTestException;
 import net.minecraft.test.TestContext;
-import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 import org.junit.Assert;
 import org.junit.function.ThrowingRunnable;
 
-import java.util.UUID;
+import java.util.function.Consumer;
 
 public final class GameTestUtil {
     public static void assertTrue(String errorMessage, boolean b) {
@@ -56,20 +52,27 @@ public final class GameTestUtil {
         }
     }
 
+    /**
+     * @deprecated use {@link ElmendorfTestContext#spawnServerPlayer(double, double, double)}
+     */
+    @Deprecated(forRemoval = true)
     public static ServerPlayerEntity spawnPlayer(TestContext ctx, double x, double y, double z) {
-        var mockPlayer = new ServerPlayerEntity(ctx.getWorld().getServer(), ctx.getWorld(), new GameProfile(UUID.randomUUID(), "test-mock-player"));
-        var connection = new MockClientConnection(NetworkSide.CLIENTBOUND);
-        mockPlayer.setPosition(ctx.getAbsolute(new Vec3d(x, y, z)));
-        mockPlayer.networkHandler = new ServerPlayNetworkHandler(ctx.getWorld().getServer(), connection, mockPlayer);
-        ctx.getWorld().spawnEntity(mockPlayer);
-        return mockPlayer;
+        return ctx.spawnServerPlayer(x, y, z);
     }
 
+    /**
+     * @deprecated use {@link ElmendorfTestContext#configureConnection(ServerPlayerEntity, Consumer)}
+     */
+    @Deprecated(forRemoval = true)
     public static ConnectionTestConfiguration configureConnection(ServerPlayerEntity player) {
         return ((MockClientConnection) player.networkHandler.connection);
     }
 
-    public static ConnectionChecker verifyConnection(ServerPlayerEntity player) {
+    /**
+     * @deprecated use {@link ElmendorfTestContext#verifyConnection(ServerPlayerEntity, Consumer)}
+     */
+    @Deprecated(forRemoval = true)
+    public static CheckedConnection verifyConnection(ServerPlayerEntity player) {
         return ((MockClientConnection) player.networkHandler.connection);
     }
 }

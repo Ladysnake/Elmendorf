@@ -4,6 +4,7 @@
   "package": "io.github.ladysnake.elmendorf.impl.mixin",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
+    "TestContextMixin",
     "flakyfix.GameTestStateMixin",
     "flakyfix.TestManagerMixin",
     "flakyfix.TestSetMixin"

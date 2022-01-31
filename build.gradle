@@ -1,9 +1,9 @@
 import java.time.Year
 
 plugins {
-	id 'fabric-loom' version '0.10-SNAPSHOT'
+	id 'fabric-loom' version '0.11-SNAPSHOT'
 	id 'org.quiltmc.quilt-mappings-on-loom' version "3.1.1"
-	id 'io.github.juuxel.loom-quiltflower-mini' version "1.1.0"
+	id 'io.github.juuxel.loom-quiltflower' version "1.6.0"
 	id 'org.cadixdev.licenser' version '0.6.1'
 	id 'com.jfrog.artifactory' version '4.21.0'
 	id 'org.ajoberstar.grgit' version '3.1.1'
@@ -23,6 +23,7 @@ sourceSets {
 		compileClasspath += main.compileClasspath
 		runtimeClasspath += main.runtimeClasspath
 	}
+	dummy
 }
 
 loom {
@@ -52,11 +53,15 @@ loom {
 }
 
 repositories {
-	// Add repositories to retrieve artifacts from in here.
-	// You should only use this when depending on other mods because
-	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
-	// for more information about repositories.
+	maven {
+		name = 'Ladysnake Mods'
+		url = 'https://ladysnake.jfrog.io/artifactory/mods'
+		content {
+			includeGroup 'io.github.ladysnake'
+			includeGroupByRegex 'dev\\.emi.*'
+			includeGroupByRegex '(io\\.github|dev)\\.onyxstudios.*'
+		}
+	}
 }
 
 dependencies {
@@ -67,8 +72,11 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	modCompileOnly modLocalRuntime("dev.onyxstudios.cardinal-components-api:cardinal-components-base:${cca_version}")
+	modCompileOnly modLocalRuntime("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${cca_version}")
 	api 'junit:junit:4.13'
 	testmodImplementation sourceSets.main.output
+	annotationProcessor(sourceSets.dummy.output)
 }
 
 processResources {

@@ -21,13 +21,16 @@
  */
 package io.github.ladysnake.elmendorf.impl;
 
+import dev.onyxstudios.cca.api.v3.component.ComponentKey;
+import dev.onyxstudios.cca.api.v3.component.ComponentProvider;
 import io.github.ladysnake.elmendorf.ByteBufChecker;
-import io.github.ladysnake.elmendorf.ConnectionChecker;
+import io.github.ladysnake.elmendorf.CheckedConnection;
 import io.github.ladysnake.elmendorf.ConnectionTestConfiguration;
 import io.github.ladysnake.elmendorf.GameTestUtil;
 import io.github.ladysnake.elmendorf.PacketChecker;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
+import net.minecraft.entity.Entity;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.Packet;
@@ -46,7 +49,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public final class MockClientConnection extends ClientConnection implements ConnectionChecker, ConnectionTestConfiguration {
+public final class MockClientConnection extends ClientConnection implements CheckedConnection, ConnectionTestConfiguration {
     private final List<SentPacket> packetQueue = new ArrayList<>();
     private boolean flushEachTick;
     private int ticks;

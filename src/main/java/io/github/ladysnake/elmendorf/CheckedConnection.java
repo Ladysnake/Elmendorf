@@ -21,14 +21,18 @@
  */
 package io.github.ladysnake.elmendorf;
 
+import dev.onyxstudios.cca.api.v3.component.ComponentKey;
+import dev.onyxstudios.cca.api.v3.component.ComponentProvider;
+import net.minecraft.entity.Entity;
 import net.minecraft.network.Packet;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Queue;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public interface ConnectionChecker {
+public interface CheckedConnection {
     PacketChecker sent(Class<? extends Packet<?>> packetType);
 
     PacketChecker sent(Identifier channelId);
