@@ -1,4 +1,11 @@
 ------------------------------------------------------
+Version 0.4.0
+------------------------------------------------------
+**Additions**
+- Now uses injected interfaces to add methods to `TestContext`
+- Added helper method to test CCA packet synchronization
+
+------------------------------------------------------
 Version 0.3.0
 ------------------------------------------------------
 **Additions**

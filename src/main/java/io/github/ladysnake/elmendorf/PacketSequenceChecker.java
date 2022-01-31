@@ -21,52 +21,60 @@
  */
 package io.github.ladysnake.elmendorf;
 
+import dev.onyxstudios.cca.api.v3.component.ComponentKey;
+import net.minecraft.entity.Entity;
 import net.minecraft.network.Packet;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public interface PacketChecker {
+public interface PacketSequenceChecker {
     /**
      * @throws net.minecraft.test.GameTestException if the current packet sequence has not occurred at least {@code times} times
      */
-    PacketChecker atLeast(int times);
+    PacketSequenceChecker atLeast(int times);
 
     /**
      * @throws net.minecraft.test.GameTestException if the current packet sequence has not occurred at least {@code times} times
      */
-    PacketChecker atLeast(String errorMessage, int times);
+    PacketSequenceChecker atLeast(String errorMessage, int times);
 
     /**
      * @throws net.minecraft.test.GameTestException if the current packet sequence has not occurred exactly {@code times} times
      */
-    PacketChecker exactly(int times);
+    PacketSequenceChecker exactly(int times);
 
     /**
      * @throws net.minecraft.test.GameTestException if the current packet sequence has not occurred exactly {@code times} times
      */
-    PacketChecker exactly(String errorMessage, int times);
+    PacketSequenceChecker exactly(String errorMessage, int times);
 
     /**
      * Creates a packet sequence checker that looks for a matching packet sent after this packet within the given {@code delay}
      */
-    PacketChecker thenSent(Delay delay, Class<? extends Packet<?>> packetType);
+    PacketSequenceChecker thenSent(Delay delay, Class<? extends Packet<?>> packetType);
 
     /**
      * Creates a packet sequence checker that looks for a matching packet sent after this packet within the given {@code delay}
      */
-    PacketChecker thenSent(Delay delay, Identifier channelId);
+    PacketSequenceChecker thenSent(Delay delay, Identifier channelId);
 
     /**
      * Creates a packet sequence checker that looks for a matching packet sent after this packet within the given {@code delay}
      */
-    PacketChecker thenSent(Delay delay, Identifier channelId, Consumer<ByteBufChecker> expect);
+    PacketSequenceChecker thenSent(Delay delay, Identifier channelId, Consumer<ByteBufChecker> expect);
+
+    /**
+     * Creates a packet sequence checker that looks for a matching Cardinal Components Entity sync packet sent after this packet within the given {@code delay}
+     */
+    PacketSequenceChecker thenSentComponentUpdate(Delay delay, @Nullable Entity synced, ComponentKey<?> key, Consumer<ByteBufChecker> expect);
 
     /**
      * Creates a packet sequence checker that looks for a matching packet sent after this packet within the given {@code delay}
      */
-    PacketChecker thenSent(Delay delay, Predicate<Packet<?>> test, String errorMessage);
+    PacketSequenceChecker thenSent(Delay delay, Predicate<Packet<?>> test, String errorMessage);
 
     enum Delay {
         /**The packet must be the one sent right after, and in the same tick*/

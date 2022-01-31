@@ -22,7 +22,6 @@
 package io.github.ladysnake.elmendorf;
 
 import dev.onyxstudios.cca.api.v3.component.ComponentKey;
-import dev.onyxstudios.cca.api.v3.component.ComponentProvider;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.Packet;
 import net.minecraft.util.Identifier;
@@ -33,13 +32,23 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public interface CheckedConnection {
-    PacketChecker sent(Class<? extends Packet<?>> packetType);
+    PacketSequenceChecker sent(Class<? extends Packet<?>> packetType);
 
-    PacketChecker sent(Identifier channelId);
+    PacketSequenceChecker sent(Identifier channelId);
 
-    PacketChecker sent(Identifier channelId, Consumer<ByteBufChecker> expect);
+    PacketSequenceChecker sent(Identifier channelId, Consumer<ByteBufChecker> expect);
 
-    PacketChecker sent(Predicate<Packet<?>> test, String errorMessage);
+    PacketSequenceChecker sent(Predicate<Packet<?>> test, String errorMessage);
+
+    /**
+     * Checks that this connection object got a Cardinal Components API sync packet sent through it
+     *
+     * @param synced the entity on which the component update occurred
+     * @param key    the key object representing the type of component that got synced
+     * @param expect assertions for the content of the buffer
+     * @return       a {@link PacketSequenceChecker} to perform advanced checks on matching packets
+     */
+    PacketSequenceChecker sentEntityComponentUpdate(@Nullable Entity synced, ComponentKey<?> key, Consumer<ByteBufChecker> expect);
 
     void sentPackets(Consumer<Queue<Packet<?>>> test);
 

@@ -22,12 +22,12 @@
 package io.github.ladysnake.elmendorf.impl;
 
 import dev.onyxstudios.cca.api.v3.component.ComponentKey;
-import dev.onyxstudios.cca.api.v3.component.ComponentProvider;
+import dev.onyxstudios.cca.internal.entity.CardinalComponentsEntity;
 import io.github.ladysnake.elmendorf.ByteBufChecker;
 import io.github.ladysnake.elmendorf.CheckedConnection;
 import io.github.ladysnake.elmendorf.ConnectionTestConfiguration;
 import io.github.ladysnake.elmendorf.GameTestUtil;
-import io.github.ladysnake.elmendorf.PacketChecker;
+import io.github.ladysnake.elmendorf.PacketSequenceChecker;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.entity.Entity;
@@ -73,17 +73,17 @@ public final class MockClientConnection extends ClientConnection implements Chec
     }
 
     @Override
-    public PacketChecker sent(Class<? extends Packet<?>> packetType) {
+    public PacketSequenceChecker sent(Class<? extends Packet<?>> packetType) {
         return sent(packetType::isInstance, "Expected packet of type " + packetType.getTypeName());
     }
 
     @Override
-    public PacketChecker sent(Identifier channelId) {
+    public PacketSequenceChecker sent(Identifier channelId) {
         return sent(packet -> packet instanceof CustomPayloadS2CPacket p && Objects.equals(p.getChannel(), channelId), "Expected packet for channel " + channelId);
     }
 
     @Override
-    public PacketChecker sent(Identifier channelId, Consumer<ByteBufChecker> expect) {
+    public PacketSequenceChecker sent(Identifier channelId, Consumer<ByteBufChecker> expect) {
         List<GameTestException> suppressed = new ArrayList<>();
         try {
             return sent(createCheckerTest(channelId, expect, suppressed), "Expected packet for channel " + channelId);
@@ -111,10 +111,27 @@ public final class MockClientConnection extends ClientConnection implements Chec
     }
 
     @Override
-    public PacketChecker sent(Predicate<Packet<?>> test, String errorMessage) {
+    public PacketSequenceChecker sent(Predicate<Packet<?>> test, String errorMessage) {
         var packets = this.packetQueue.stream().filter(p -> test.test(p.packet)).toList();
         GameTestUtil.assertFalse(errorMessage, packets.isEmpty());
-        return new PacketCheckerImpl(errorMessage, packets);
+        return new PacketSequenceCheckerImpl(errorMessage, packets);
+    }
+
+    @Override
+    public PacketSequenceChecker sentEntityComponentUpdate(@Nullable Entity synced, ComponentKey<?> key, Consumer<ByteBufChecker> expect) {
+        if (synced != null) GameTestUtil.assertTrue("Expected " + synced + " to provide component " + key.getId(), key.isProvidedBy(synced));
+        List<GameTestException> suppressed = new ArrayList<>();
+        try {
+            // Don't access internal API at home kids
+            //noinspection UnstableApiUsage
+            return sent(
+                    createCheckerTest(CardinalComponentsEntity.PACKET_ID, ((Consumer<ByteBufChecker>) c -> c.checkInt(synced == null ? ByteBufChecker.any() : synced.getId()).checkIdentifier(key.getId())).andThen(expect), suppressed),
+                    "Expected sync packet for component " + key.getId()
+            );
+        } catch (GameTestException e) {
+            suppressed.forEach(e::addSuppressed);
+            throw e;
+        }
     }
 
     @Override
@@ -132,44 +149,44 @@ public final class MockClientConnection extends ClientConnection implements Chec
         this.packetQueue.add(new SentPacket(packet, this.ticks));
     }
 
-    public record PacketCheckerImpl(String defaultErrorMessage, List<SentPacket> packets) implements PacketChecker {
+    public record PacketSequenceCheckerImpl(String defaultErrorMessage, List<SentPacket> packets) implements PacketSequenceChecker {
 
         @Override
-        public PacketChecker atLeast(int times) {
+        public PacketSequenceChecker atLeast(int times) {
             GameTestUtil.assertTrue("%s to be sent at least %d times, was %d".formatted(defaultErrorMessage, times, this.packets.size()), this.packets.size() >= times);
             return this;
         }
 
         @Override
-        public PacketChecker atLeast(String errorMessage, int times) {
+        public PacketSequenceChecker atLeast(String errorMessage, int times) {
             GameTestUtil.assertTrue(errorMessage, this.packets.size() >= times);
             return this;
         }
 
         @Override
-        public PacketChecker exactly(int times) {
+        public PacketSequenceChecker exactly(int times) {
             GameTestUtil.assertTrue("%s to be sent %d times, was %d".formatted(defaultErrorMessage, times, this.packets.size()), this.packets.size() == times);
             return this;
         }
 
         @Override
-        public PacketChecker exactly(String errorMessage, int times) {
+        public PacketSequenceChecker exactly(String errorMessage, int times) {
             GameTestUtil.assertTrue(errorMessage, this.packets.size() == times);
             return this;
         }
 
         @Override
-        public PacketChecker thenSent(Delay delay, Class<? extends Packet<?>> packetType) {
+        public PacketSequenceChecker thenSent(Delay delay, Class<? extends Packet<?>> packetType) {
             return thenSent(delay, packetType::isInstance, "Expected packet of type " + packetType.getTypeName());
         }
 
         @Override
-        public PacketChecker thenSent(Delay delay, Identifier channelId) {
+        public PacketSequenceChecker thenSent(Delay delay, Identifier channelId) {
             return thenSent(delay, packet -> packet instanceof CustomPayloadS2CPacket p && Objects.equals(p.getChannel(), channelId), "Expected packet for channel " + channelId);
         }
 
         @Override
-        public PacketChecker thenSent(Delay delay, Identifier channelId, Consumer<ByteBufChecker> expect) {
+        public PacketSequenceChecker thenSent(Delay delay, Identifier channelId, Consumer<ByteBufChecker> expect) {
             List<GameTestException> suppressed = new ArrayList<>();
             try {
                 return this.thenSent(delay, createCheckerTest(channelId, expect, suppressed), "Expected packet for channel " + channelId);
@@ -180,10 +197,27 @@ public final class MockClientConnection extends ClientConnection implements Chec
         }
 
         @Override
-        public PacketChecker thenSent(Delay delay, Predicate<Packet<?>> test, String errorMessage) {
+        public PacketSequenceChecker thenSentComponentUpdate(Delay delay, @Nullable Entity synced, ComponentKey<?> key, Consumer<ByteBufChecker> expect) {
+            if (synced != null) GameTestUtil.assertTrue("Expected " + synced + " to provide component " + key.getId(), key.isProvidedBy(synced));
+            List<GameTestException> suppressed = new ArrayList<>();
+            try {
+                // Don't access internal API at home kids
+                //noinspection UnstableApiUsage
+                return thenSent(delay,
+                        createCheckerTest(CardinalComponentsEntity.PACKET_ID, ((Consumer<ByteBufChecker>) c -> c.checkInt(synced == null ? ByteBufChecker.any() : synced.getId()).checkIdentifier(key.getId())).andThen(expect), suppressed),
+                        "Expected sync packet for component " + key.getId()
+                );
+            } catch (GameTestException e) {
+                suppressed.forEach(e::addSuppressed);
+                throw e;
+            }
+        }
+
+        @Override
+        public PacketSequenceChecker thenSent(Delay delay, Predicate<Packet<?>> test, String errorMessage) {
             var packets = this.packets().stream().map(p -> p.next(delay, test)).filter(Objects::nonNull).toList();
             GameTestUtil.assertFalse(errorMessage, packets.isEmpty());
-            return new PacketCheckerImpl(errorMessage, packets);
+            return new PacketSequenceCheckerImpl(errorMessage, packets);
         }
     }
 
@@ -196,7 +230,7 @@ public final class MockClientConnection extends ClientConnection implements Chec
             this.tick = tick;
         }
 
-        public @Nullable SentPacket next(PacketChecker.Delay delay, Predicate<Packet<?>> test) {
+        public @Nullable SentPacket next(PacketSequenceChecker.Delay delay, Predicate<Packet<?>> test) {
             SentPacket successor;
             for (var it = packetQueue.listIterator(packetQueue.indexOf(this) + 1); it.hasNext();) {
                 successor = it.next();

@@ -21,7 +21,6 @@
  */
 package io.github.ladysnake.elmendorf;
 
-import io.netty.buffer.ByteBuf;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.test.GameTestException;
@@ -93,11 +92,10 @@ public final class ByteBufChecker {
         return check(String.class, expected, PacketByteBuf::readString);
     }
 
-    public ByteBufChecker noMoreData() {
+    public void noMoreData() {
         if (this.buf.isReadable()) {
             throw new GameTestException("Expected end of buffer");
         }
-        return this;
     }
 
     public <T> ByteBufChecker check(Class<T> type, @Nullable T expected, Function<PacketByteBuf, T> reader) {

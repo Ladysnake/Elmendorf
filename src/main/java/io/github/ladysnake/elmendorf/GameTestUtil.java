@@ -48,7 +48,7 @@ public final class GameTestUtil {
         try {
             Assert.assertThrows(errorMessage, expectedThrowable, runnable);
         } catch (AssertionError e) {
-            throw new GameTestException(e.getMessage());
+            throw (GameTestException) new GameTestException(e.getMessage()).initCause(e.getCause());
         }
     }
 

@@ -21,14 +21,13 @@
  */
 package io.github.ladysnake.ripstop;
 
-import dev.onyxstudios.cca.api.v3.component.Component;
-import dev.onyxstudios.cca.api.v3.component.ComponentRegistry;
 import io.github.ladysnake.elmendorf.ByteBufChecker;
 import io.github.ladysnake.elmendorf.GameTestUtil;
-import io.github.ladysnake.elmendorf.PacketChecker;
+import io.github.ladysnake.elmendorf.PacketSequenceChecker;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.entity.EntityType;
 import net.minecraft.network.packet.s2c.play.BlockBreakingProgressS2CPacket;
 import net.minecraft.network.packet.s2c.play.ClearTitleS2CPacket;
 import net.minecraft.test.GameTest;
@@ -70,11 +69,22 @@ public class RipstopTestSuite implements FabricGameTest {
         ctx.verifyConnection(player, conn ->
                 conn.sent(BlockBreakingProgressS2CPacket.class)
                 // 3 matching packets
-                .thenSent(PacketChecker.Delay.IMMEDIATELY, BlockBreakingProgressS2CPacket.class)
+                .thenSent(PacketSequenceChecker.Delay.IMMEDIATELY, BlockBreakingProgressS2CPacket.class)
                 // 2 matching packets: the last BlockBreaking packet is logically not followed by another one
-                .thenSent(PacketChecker.Delay.SAME_TICK, new Identifier("a"), c -> c.checkBoolean(true).noMoreData())
+                .thenSent(PacketSequenceChecker.Delay.SAME_TICK, new Identifier("a"), c -> c.checkBoolean(true).noMoreData())
                 // still 2 matching packets: all BlockBreaking packets are followed by the custom packet in the same tick
                 .exactly(2));
+        ctx.complete();
+    }
+
+    @GameTest(structureName = EMPTY_STRUCTURE)
+    public void testComponentSyncChecks(TestContext ctx) {
+        var player = ctx.spawnServerPlayer(5, 0, 5);
+        var key = RipstopComponents.TEST;
+        var entity = ctx.spawnEntity(EntityType.AXOLOTL, 1, 0, 1);
+        key.sync(entity);
+        GameTestUtil.assertThrows("Expected " + player + " to provide component ripstop:test-component", GameTestException.class, () -> ctx.verifyConnection(player, conn -> conn.sentEntityComponentUpdate(player, key, ByteBufChecker::noMoreData)));
+        ctx.verifyConnection(player, conn -> conn.sentEntityComponentUpdate(entity, key, ByteBufChecker::noMoreData));
         ctx.complete();
     }
 }

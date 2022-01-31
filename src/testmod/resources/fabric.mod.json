@@ -17,6 +17,9 @@
 
   "environment": "*",
   "entrypoints": {
+    "cardinal-components": [
+      "io.github.ladysnake.ripstop.RipstopComponents"
+    ],
     "fabric-gametest": [
       "io.github.ladysnake.ripstop.RipstopTestSuite"
     ]
