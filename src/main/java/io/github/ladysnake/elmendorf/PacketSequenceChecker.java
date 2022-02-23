@@ -59,6 +59,11 @@ public interface PacketSequenceChecker {
     /**
      * Creates a packet sequence checker that looks for a matching packet sent after this packet within the given {@code delay}
      */
+    <P extends Packet<?>> PacketSequenceChecker thenSent(Delay delay, Class<P> packetType, Predicate<P> expect);
+
+    /**
+     * Creates a packet sequence checker that looks for a matching packet sent after this packet within the given {@code delay}
+     */
     PacketSequenceChecker thenSent(Delay delay, Identifier channelId);
 
     /**

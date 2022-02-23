@@ -51,6 +51,7 @@ import java.util.stream.Collectors;
 
 public final class MockClientConnection extends ClientConnection implements CheckedConnection, ConnectionTestConfiguration {
     private final List<SentPacket> packetQueue = new ArrayList<>();
+    private boolean allowNoPacketMatch;
     private boolean flushEachTick;
     private int ticks;
 
@@ -73,8 +74,19 @@ public final class MockClientConnection extends ClientConnection implements Chec
     }
 
     @Override
+    public CheckedConnection allowNoPacketMatch(boolean allow) {
+        this.allowNoPacketMatch = allow;
+        return this;
+    }
+
+    @Override
     public PacketSequenceChecker sent(Class<? extends Packet<?>> packetType) {
         return sent(packetType::isInstance, "Expected packet of type " + packetType.getTypeName());
+    }
+
+    @Override
+    public <P extends Packet<?>> PacketSequenceChecker sent(Class<P> packetType, Predicate<P> expect) {
+        return sent(packet -> packetType.isInstance(packet) && expect.test(packetType.cast(packet)), "Expected packet of type " + packetType.getTypeName());
     }
 
     @Override
@@ -113,7 +125,7 @@ public final class MockClientConnection extends ClientConnection implements Chec
     @Override
     public PacketSequenceChecker sent(Predicate<Packet<?>> test, String errorMessage) {
         var packets = this.packetQueue.stream().filter(p -> test.test(p.packet)).toList();
-        GameTestUtil.assertFalse(errorMessage, packets.isEmpty());
+        if (!this.allowNoPacketMatch) GameTestUtil.assertFalse(errorMessage, packets.isEmpty());
         return new PacketSequenceCheckerImpl(errorMessage, packets);
     }
 
@@ -178,6 +190,11 @@ public final class MockClientConnection extends ClientConnection implements Chec
         @Override
         public PacketSequenceChecker thenSent(Delay delay, Class<? extends Packet<?>> packetType) {
             return thenSent(delay, packetType::isInstance, "Expected packet of type " + packetType.getTypeName());
+        }
+
+        @Override
+        public <P extends Packet<?>> PacketSequenceChecker thenSent(Delay delay, Class<P> packetType, Predicate<P> expect) {
+            return thenSent(delay, packet -> packetType.isInstance(packet) && expect.test(packetType.cast(packet)), "Expected packet of type " + packetType.getTypeName());
         }
 
         @Override

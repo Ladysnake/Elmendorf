@@ -32,7 +32,20 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public interface CheckedConnection {
+    /**
+     * Sets whether this connection object should allow empty packet matches.
+     *
+     * <p>If left to {@code false}, {@code sent} checks will throw when no matching packet is found.
+     * Allowing empty matches notably allows for more advanced checks on {@link PacketSequenceChecker}.
+     *
+     * @param allow whether {@code sent} methods should throw immediately on empty matches
+     * @return {@code this}, for chaining
+     */
+    CheckedConnection allowNoPacketMatch(boolean allow);
+
     PacketSequenceChecker sent(Class<? extends Packet<?>> packetType);
+
+    <P extends Packet<?>> PacketSequenceChecker sent(Class<P> packetType, Predicate<P> expect);
 
     PacketSequenceChecker sent(Identifier channelId);
 

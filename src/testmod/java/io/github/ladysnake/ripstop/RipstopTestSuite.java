@@ -67,7 +67,7 @@ public class RipstopTestSuite implements FabricGameTest {
         buf1.writeBoolean(true);
         player.networkHandler.sendPacket(ServerPlayNetworking.createS2CPacket(new Identifier("a"), buf1));
         ctx.verifyConnection(player, conn ->
-                conn.sent(BlockBreakingProgressS2CPacket.class)
+                conn.sent(BlockBreakingProgressS2CPacket.class, packet -> packet.getEntityId() == 1)
                 // 3 matching packets
                 .thenSent(PacketSequenceChecker.Delay.IMMEDIATELY, BlockBreakingProgressS2CPacket.class)
                 // 2 matching packets: the last BlockBreaking packet is logically not followed by another one
