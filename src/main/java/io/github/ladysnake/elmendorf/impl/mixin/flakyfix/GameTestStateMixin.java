@@ -19,6 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package io.github.ladysnake.elmendorf.impl.mixin.flakyfix;
 
 import io.github.ladysnake.elmendorf.impl.FixedGameTestState;
