@@ -1,20 +1,17 @@
-import java.time.Year
-
 plugins {
-	id 'io.github.ladysnake.chenille' version '0.5.0' apply false
-	id 'org.quiltmc.quilt-mappings-on-loom' version "3.1.1"
-	id 'io.github.juuxel.loom-quiltflower' version "1.6.0"
+	id 'io.github.ladysnake.chenille' version '0.6.0-SNAPSHOT'
+	id 'org.quiltmc.quilt-mappings-on-loom' version '3.1.1'
+	id 'io.github.juuxel.loom-quiltflower' version '1.6.0'
 }
 
-apply plugin: 'org.cadixdev.licenser'
-apply plugin: 'com.jfrog.artifactory'
-apply plugin: 'maven-publish'
-apply plugin: 'com.github.breadmoirai.github-release'
-apply plugin: 'io.github.ladysnake.chenille'
+archivesBaseName = project.archives_base_name
+version = project.mod_version
+group = project.maven_group
 
 chenille {
 	configurePublishing {
 		withArtifactory()
+		withGithubRelease()
 	}
 	configureTestmod {
 		withDependencyConfiguration()
@@ -23,10 +20,6 @@ chenille {
 	javaVersion = 17
 	license = 'LGPL'
 }
-
-archivesBaseName = project.archives_base_name
-version = project.mod_version
-group = project.maven_group
 
 sourceSets {
 	dummy
