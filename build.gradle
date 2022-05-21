@@ -32,6 +32,15 @@ chenille {
 	license = 'LGPL'
 }
 
+afterEvaluate {
+	license {
+		println(header)
+		println(ext["year"])
+		println(ext["projectDisplayName"])
+		println(ext["projectOwners"])
+	}
+}
+
 sourceSets {
 	dummy
 }
