@@ -7,6 +7,13 @@ name: build
 on: [pull_request, push]
 
 jobs:
+  license:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
   build:
     strategy:
       matrix:
@@ -31,6 +38,8 @@ jobs:
       - name: make gradle wrapper executable
         if: ${{ runner.os != 'Windows' }}
         run: chmod +x ./gradlew
+      - name: license
+        run: ./gradlew updateLicenses
       - name: build
         run: ./gradlew build
       - name: capture build artifacts
@@ -39,3 +48,7 @@ jobs:
         with:
           name: Artifacts
           path: build/libs/
+      - name: commit license changes
+        uses: EndBug/add-and-commit@v9 # You can change this to use a specific version.
+        with:
+          add: 'src'

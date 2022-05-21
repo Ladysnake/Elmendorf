@@ -34,7 +34,7 @@ chenille {
 
 afterEvaluate {
 	license {
-		println(header)
+		println(header.get().asString())
 		println(ext["year"])
 		println(ext["projectDisplayName"])
 		println(ext["projectOwners"])
