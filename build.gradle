@@ -1,3 +1,7 @@
+import org.eclipse.jgit.api.Git
+import io.github.ladysnake.chenille.JGitWrapper
+import java.util.Calendar
+
 plugins {
 	id 'io.github.ladysnake.chenille' version '0.7.0'
 	id 'io.github.juuxel.loom-quiltflower' version '1.6.0'
@@ -6,6 +10,14 @@ plugins {
 archivesBaseName = project.archives_base_name
 version = project.mod_version
 group = project.maven_group
+
+def firstCommit = new JGitWrapper(Git.open(rootDir)).getFirstCommit()
+println(firstCommit)
+println(firstCommit.commitTime)
+def calendar = Calendar.getInstance()
+println(calendar.get(Calendar.YEAR))
+calendar.timeInMillis = firstCommit.commitTime.toLong() * 1000
+println(calendar.get(Calendar.YEAR))
 
 chenille {
 	configurePublishing {
