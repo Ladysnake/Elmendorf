@@ -40,7 +40,7 @@ import net.minecraft.util.math.BlockPos;
 import static io.github.ladysnake.elmendorf.ByteBufChecker.any;
 
 public class RipstopTestSuite implements FabricGameTest {
-    @GameTest(structureName = EMPTY_STRUCTURE)
+    @GameTest(templateName = EMPTY_STRUCTURE)
     public void testPacketChecks(TestContext ctx) {
         var player = ctx.spawnServerPlayer(5, 5, 5);
         player.networkHandler.sendPacket(new ClearTitleS2CPacket(true));
@@ -58,7 +58,7 @@ public class RipstopTestSuite implements FabricGameTest {
         ctx.complete();
     }
 
-    @GameTest(structureName = EMPTY_STRUCTURE)
+    @GameTest(templateName = EMPTY_STRUCTURE)
     public void testPacketSequenceChecks(TestContext ctx) {
         var player = ctx.spawnServerPlayer(5, 5, 5);
         player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(1, BlockPos.ORIGIN, 3));
@@ -78,7 +78,7 @@ public class RipstopTestSuite implements FabricGameTest {
         ctx.complete();
     }
 
-    @GameTest(structureName = EMPTY_STRUCTURE)
+    @GameTest(templateName = EMPTY_STRUCTURE)
     public void testComponentSyncChecks(TestContext ctx) {
         var player = ctx.spawnServerPlayer(5, 0, 5);
         var key = RipstopComponents.TEST;

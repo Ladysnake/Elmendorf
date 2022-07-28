@@ -31,6 +31,7 @@ import io.github.ladysnake.elmendorf.GameTestUtil;
 import io.github.ladysnake.elmendorf.PacketSequenceChecker;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
+import net.minecraft.class_7648;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.NetworkSide;
@@ -158,7 +159,7 @@ public final class MockClientConnection extends ClientConnection implements Chec
     }
 
     @Override
-    public void send(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> callback) {
+    public void send(Packet<?> packet, @Nullable class_7648 callback) {
         this.packetQueue.add(new SentPacket(packet, this.ticks));
     }
 
