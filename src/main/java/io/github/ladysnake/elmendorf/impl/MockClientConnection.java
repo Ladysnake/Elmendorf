@@ -29,8 +29,7 @@ import io.github.ladysnake.elmendorf.CheckedConnection;
 import io.github.ladysnake.elmendorf.ConnectionTestConfiguration;
 import io.github.ladysnake.elmendorf.GameTestUtil;
 import io.github.ladysnake.elmendorf.PacketSequenceChecker;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
+import io.github.ladysnake.elmendorf.impl.mixin.ClientConnectionAccessor;
 import net.minecraft.class_7648;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.ClientConnection;
@@ -38,6 +37,7 @@ import net.minecraft.network.NetworkSide;
 import net.minecraft.network.Packet;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.test.GameTestException;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -161,6 +161,18 @@ public final class MockClientConnection extends ClientConnection implements Chec
     @Override
     public void send(Packet<?> packet, @Nullable class_7648 callback) {
         this.packetQueue.add(new SentPacket(packet, this.ticks));
+        if (callback != null) callback.method_45083();
+    }
+
+    @Override
+    public void disableAutoRead() {
+        // NO-OP
+    }
+
+    @Override
+    public void disconnect(Text disconnectReason) {
+        //noinspection ConstantConditions
+        ((ClientConnectionAccessor)(Object)this).setDisconnectReason(disconnectReason);
     }
 
     public record PacketSequenceCheckerImpl(String defaultErrorMessage, List<SentPacket> packets) implements PacketSequenceChecker {
