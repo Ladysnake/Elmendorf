@@ -6,6 +6,7 @@
   "mixins": [
     "FabricGameTestModInitializerAccessor",
     "TestContextMixin",
+    "XmlReportingTestCompletionListenerMixin",
     "flakyfix.GameTestStateMixin",
     "flakyfix.TestManagerMixin",
     "flakyfix.TestSetMixin"
