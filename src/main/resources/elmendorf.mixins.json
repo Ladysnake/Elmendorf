@@ -4,6 +4,7 @@
   "package": "io.github.ladysnake.elmendorf.impl.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "FabricGameTestModInitializerAccessor",
     "TestContextMixin",
     "flakyfix.GameTestStateMixin",
     "flakyfix.TestManagerMixin",
