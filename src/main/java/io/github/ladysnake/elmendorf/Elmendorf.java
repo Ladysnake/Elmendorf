@@ -22,11 +22,19 @@
  */
 package io.github.ladysnake.elmendorf;
 
+import com.google.common.base.Preconditions;
 import io.github.ladysnake.elmendorf.impl.mixin.FabricGameTestModInitializerAccessor;
 import net.minecraft.test.TestFunctions;
 
 public final class Elmendorf {
+    /**
+     * Registers a class as a test container. This method should be called during test mod initialization.
+     * @param testClass a class containing test methods, which was not already registered through other means
+     * @param modId the id for the mod to which the class belongs
+     * @throws IllegalStateException if the class already got registered through this method or through the entrypoint
+     */
     public static void registerTestClass(Class<?> testClass, String modId) {
+        Preconditions.checkState(!FabricGameTestModInitializerAccessor.getGameTestIds().containsKey(testClass));
         FabricGameTestModInitializerAccessor.getGameTestIds().put(testClass, modId);
         TestFunctions.register(testClass);
     }

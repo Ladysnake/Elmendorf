@@ -1,4 +1,19 @@
 ------------------------------------------------------
+Version 0.8.0
+------------------------------------------------------
+**Additions**
+- Added a utility method to register test classes at runtime
+- Test failures that are not simple assertions now get logged with their full stacktrace
+
+**Fixes**
+- Fixed an error when attempting to disconnect a mock player
+
+------------------------------------------------------
+Version 0.7.0
+------------------------------------------------------
+Updated to 1.19.1
+
+------------------------------------------------------
 Version 0.6.0
 ------------------------------------------------------
 Updated to 1.19
