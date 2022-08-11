@@ -22,9 +22,10 @@
  */
 package io.github.ladysnake.elmendorf;
 
-import com.google.common.base.Preconditions;
 import io.github.ladysnake.elmendorf.impl.mixin.FabricGameTestModInitializerAccessor;
 import net.minecraft.test.TestFunctions;
+
+import java.util.Map;
 
 public final class Elmendorf {
     /**
@@ -34,8 +35,9 @@ public final class Elmendorf {
      * @throws IllegalStateException if the class already got registered through this method or through the entrypoint
      */
     public static void registerTestClass(Class<?> testClass, String modId) {
-        Preconditions.checkState(!FabricGameTestModInitializerAccessor.getGameTestIds().containsKey(testClass));
-        FabricGameTestModInitializerAccessor.getGameTestIds().put(testClass, modId);
+        Map<Class<?>, String> testOwners = FabricGameTestModInitializerAccessor.getGameTestIds();
+        if (testOwners.containsKey(testClass)) throw new IllegalStateException(testClass + " got registered twice");
+        testOwners.put(testClass, modId);
         TestFunctions.register(testClass);
     }
 }
