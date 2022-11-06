@@ -30,11 +30,11 @@ import io.github.ladysnake.elmendorf.ConnectionTestConfiguration;
 import io.github.ladysnake.elmendorf.GameTestUtil;
 import io.github.ladysnake.elmendorf.PacketSequenceChecker;
 import io.github.ladysnake.elmendorf.impl.mixin.ClientConnectionAccessor;
-import net.minecraft.class_7648;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.Packet;
+import net.minecraft.network.PacketCallbacks;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.test.GameTestException;
 import net.minecraft.text.Text;
@@ -159,9 +159,9 @@ public final class MockClientConnection extends ClientConnection implements Chec
     }
 
     @Override
-    public void send(Packet<?> packet, @Nullable class_7648 callback) {
+    public void send(Packet<?> packet, @Nullable PacketCallbacks callback) {
         this.packetQueue.add(new SentPacket(packet, this.ticks));
-        if (callback != null) callback.method_45083();
+        if (callback != null) callback.onSuccess();
     }
 
     @Override

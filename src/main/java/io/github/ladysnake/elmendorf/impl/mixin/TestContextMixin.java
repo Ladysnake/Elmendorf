@@ -47,7 +47,7 @@ public abstract class TestContextMixin implements ElmendorfTestContext {
 
     @Override
     public ServerPlayerEntity spawnServerPlayer(double x, double y, double z) {
-        var mockPlayer = new ServerPlayerEntity(this.getWorld().getServer(), this.getWorld(), new GameProfile(UUID.randomUUID(), "test-mock-player"), null);
+        var mockPlayer = new ServerPlayerEntity(this.getWorld().getServer(), this.getWorld(), new GameProfile(UUID.randomUUID(), "test-mock-player"));
         var connection = new MockClientConnection(NetworkSide.CLIENTBOUND);
         mockPlayer.setPosition(this.getAbsolute(new Vec3d(x, y, z)));
         mockPlayer.networkHandler = new ServerPlayNetworkHandler(this.getWorld().getServer(), connection, mockPlayer);
