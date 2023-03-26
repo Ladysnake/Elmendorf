@@ -20,31 +20,15 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
  * OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.ladysnake.elmendorf;
+package io.github.ladysnake.elmendorf.impl.mixin;
 
-import net.minecraft.test.GameTestException;
-import org.jetbrains.annotations.Nullable;
-import org.junit.Assert;
-import org.junit.function.ThrowingRunnable;
+import net.minecraft.network.ClientConnection;
+import net.minecraft.server.network.ServerPlayNetworkHandler;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Accessor;
 
-public final class GameTestUtil {
-    public static void assertTrue(String errorMessage, boolean b) {
-        if (!b) throw new GameTestException(errorMessage);
-    }
-
-    public static void assertFalse(String errorMessage, boolean b) {
-        if (b) throw new GameTestException(errorMessage);
-    }
-
-    public static void assertThrows(Class<? extends Throwable> expectedThrowable, ThrowingRunnable runnable) {
-        assertThrows(null, expectedThrowable, runnable);
-    }
-
-    public static void assertThrows(@Nullable String errorMessage, Class<? extends Throwable> expectedThrowable, ThrowingRunnable runnable) {
-        try {
-            Assert.assertThrows(errorMessage, expectedThrowable, runnable);
-        } catch (AssertionError e) {
-            throw (GameTestException) new GameTestException(e.getMessage()).initCause(e.getCause());
-        }
-    }
+@Mixin(ServerPlayNetworkHandler.class)
+public interface ServerPlayNetworkHandlerAccessor {
+    @Accessor("connection")
+    ClientConnection elmendorf$getConnection();
 }

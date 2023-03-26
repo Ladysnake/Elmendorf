@@ -17,7 +17,7 @@ chenille {
 		withDependencyConfiguration()
 	}
 
-	javaVersion = 17
+	javaVersion = project.java_version.toInteger()
 	license = 'MIT'
 }
 

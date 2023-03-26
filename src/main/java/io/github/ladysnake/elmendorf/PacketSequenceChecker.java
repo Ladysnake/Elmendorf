@@ -24,7 +24,7 @@ package io.github.ladysnake.elmendorf;
 
 import dev.onyxstudios.cca.api.v3.component.ComponentKey;
 import net.minecraft.entity.Entity;
-import net.minecraft.network.Packet;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 

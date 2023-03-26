@@ -57,11 +57,11 @@ public abstract class TestContextMixin implements ElmendorfTestContext {
 
     @Override
     public void configureConnection(ServerPlayerEntity player, Consumer<ConnectionTestConfiguration> configurator) {
-        configurator.accept(((MockClientConnection) player.networkHandler.connection));
+        configurator.accept(((MockClientConnection) ((ServerPlayNetworkHandlerAccessor) player.networkHandler).elmendorf$getConnection()));
     }
 
     @Override
     public void verifyConnection(ServerPlayerEntity player, Consumer<CheckedConnection> verifier) {
-        verifier.accept(((MockClientConnection) player.networkHandler.connection));
+        verifier.accept(((MockClientConnection) ((ServerPlayNetworkHandlerAccessor) player.networkHandler).elmendorf$getConnection()));
     }
 }
