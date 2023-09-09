@@ -20,24 +20,11 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
  * OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.ladysnake.elmendorf.impl.mixin.flakyfix;
+package org.ladysnake.elmendorf.impl;
 
-import io.github.ladysnake.elmendorf.impl.FixedGameTestState;
 import net.minecraft.test.GameTestState;
-import org.spongepowered.asm.mixin.Mixin;
 
-@Mixin(GameTestState.class)
-public abstract class GameTestStateMixin implements FixedGameTestState {
-    // Keep track of replacement states, for tests that are run multiple times
-    private GameTestState cs$fallbackGameTest;
-
-    @Override
-    public void cs$setReplacementGameTest(GameTestState state) {
-        this.cs$fallbackGameTest = state;
-    }
-
-    @Override
-    public GameTestState cs$getReplacementGameTest() {
-        return this.cs$fallbackGameTest == null ? (GameTestState) (Object) this : ((FixedGameTestState) this.cs$fallbackGameTest).cs$getReplacementGameTest();
-    }
+public interface FixedGameTestState {
+    void cs$setReplacementGameTest(GameTestState state);
+    GameTestState cs$getReplacementGameTest();
 }

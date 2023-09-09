@@ -20,22 +20,8 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
  * OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.ladysnake.elmendorf;
+package org.ladysnake.elmendorf;
 
-import net.minecraft.server.network.ServerPlayerEntity;
-
-import java.util.function.Consumer;
-
-public interface ElmendorfTestContext {
-    default ServerPlayerEntity spawnServerPlayer(double x, double y, double z) {
-        throw new UnsupportedOperationException();
-    }
-
-    default void configureConnection(ServerPlayerEntity player, Consumer<ConnectionTestConfiguration> configurator) {
-
-    }
-
-    default void verifyConnection(ServerPlayerEntity player, Consumer<CheckedConnection> verifier) {
-
-    }
+public interface ConnectionTestConfiguration {
+    void toFlushPacketsEachTick(boolean flush);
 }

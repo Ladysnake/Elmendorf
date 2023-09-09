@@ -20,27 +20,27 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
  * OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.ladysnake.elmendorf.impl;
+package org.ladysnake.elmendorf.impl;
 
 import dev.onyxstudios.cca.api.v3.component.ComponentKey;
 import dev.onyxstudios.cca.internal.entity.CardinalComponentsEntity;
-import io.github.ladysnake.elmendorf.ByteBufChecker;
-import io.github.ladysnake.elmendorf.CheckedConnection;
-import io.github.ladysnake.elmendorf.ConnectionTestConfiguration;
-import io.github.ladysnake.elmendorf.GameTestUtil;
-import io.github.ladysnake.elmendorf.PacketSequenceChecker;
-import io.github.ladysnake.elmendorf.impl.mixin.ClientConnectionAccessor;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.NetworkSide;
-import net.minecraft.network.packet.Packet;
 import net.minecraft.network.PacketCallbacks;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.test.GameTestException;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.ladysnake.elmendorf.ByteBufChecker;
+import org.ladysnake.elmendorf.CheckedConnection;
+import org.ladysnake.elmendorf.ConnectionTestConfiguration;
+import org.ladysnake.elmendorf.GameTestUtil;
+import org.ladysnake.elmendorf.PacketSequenceChecker;
+import org.ladysnake.elmendorf.impl.mixin.ClientConnectionAccessor;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;

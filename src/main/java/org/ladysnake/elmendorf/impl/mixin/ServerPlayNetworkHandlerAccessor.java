@@ -20,17 +20,15 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
  * OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.ladysnake.ripstop;
+package org.ladysnake.elmendorf.impl.mixin;
 
-import io.github.ladysnake.elmendorf.Elmendorf;
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.network.ClientConnection;
+import net.minecraft.server.network.ServerPlayNetworkHandler;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Accessor;
 
-public class Ripstop implements ModInitializer {
-    @Override
-    public void onInitialize() {
-        if (FabricLoader.getInstance().isModLoaded("cardinal-components-entity")) {
-            Elmendorf.registerTestClass(RipstopCcaTestSuite.class, "ripstop");
-        }
-    }
+@Mixin(ServerPlayNetworkHandler.class)
+public interface ServerPlayNetworkHandlerAccessor {
+    @Accessor("connection")
+    ClientConnection elmendorf$getConnection();
 }

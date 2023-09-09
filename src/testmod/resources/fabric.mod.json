@@ -18,13 +18,13 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "io.github.ladysnake.ripstop.Ripstop"
+      "org.ladysnake.ripstop.Ripstop"
     ],
     "cardinal-components": [
-      "io.github.ladysnake.ripstop.RipstopComponents"
+      "org.ladysnake.ripstop.RipstopComponents"
     ],
     "fabric-gametest": [
-      "io.github.ladysnake.ripstop.RipstopTestSuite"
+      "org.ladysnake.ripstop.RipstopTestSuite"
     ]
   },
   "mixins": [

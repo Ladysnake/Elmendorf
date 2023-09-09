@@ -20,25 +20,15 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
  * OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.ladysnake.ripstop;
+package org.ladysnake.elmendorf.impl.mixin;
 
-import io.github.ladysnake.elmendorf.ByteBufChecker;
-import io.github.ladysnake.elmendorf.GameTestUtil;
-import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
-import net.minecraft.entity.EntityType;
-import net.minecraft.test.GameTest;
-import net.minecraft.test.GameTestException;
-import net.minecraft.test.TestContext;
+import net.minecraft.network.ClientConnection;
+import net.minecraft.text.Text;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Accessor;
 
-public class RipstopCcaTestSuite implements FabricGameTest {
-    @GameTest(templateName = EMPTY_STRUCTURE)
-    public void testComponentSyncChecks(TestContext ctx) {
-        var player = ctx.spawnServerPlayer(5, 0, 5);
-        var key = RipstopComponents.TEST;
-        var entity = ctx.spawnEntity(EntityType.AXOLOTL, 1, 0, 1);
-        key.sync(entity);
-        GameTestUtil.assertThrows("Expected " + player + " to provide component ripstop:test-component", GameTestException.class, () -> ctx.verifyConnection(player, conn -> conn.sentEntityComponentUpdate(player, key, ByteBufChecker::noMoreData)));
-        ctx.verifyConnection(player, conn -> conn.sentEntityComponentUpdate(entity, key, ByteBufChecker::noMoreData));
-        ctx.complete();
-    }
+@Mixin(ClientConnection.class)
+public interface ClientConnectionAccessor {
+    @Accessor
+    void setDisconnectReason(Text reason);
 }

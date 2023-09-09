@@ -20,10 +20,8 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
  * OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.ladysnake.ripstop;
+package org.ladysnake.ripstop;
 
-import io.github.ladysnake.elmendorf.GameTestUtil;
-import io.github.ladysnake.elmendorf.PacketSequenceChecker;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -34,8 +32,10 @@ import net.minecraft.test.GameTestException;
 import net.minecraft.test.TestContext;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import org.ladysnake.elmendorf.GameTestUtil;
+import org.ladysnake.elmendorf.PacketSequenceChecker;
 
-import static io.github.ladysnake.elmendorf.ByteBufChecker.any;
+import static org.ladysnake.elmendorf.ByteBufChecker.any;
 
 public class RipstopTestSuite implements FabricGameTest {
     @GameTest(templateName = EMPTY_STRUCTURE)

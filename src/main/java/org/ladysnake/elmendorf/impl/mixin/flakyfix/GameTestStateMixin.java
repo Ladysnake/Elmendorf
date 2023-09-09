@@ -20,34 +20,24 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
  * OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.ladysnake.elmendorf.impl.mixin;
+package org.ladysnake.elmendorf.impl.mixin.flakyfix;
 
-import net.minecraft.test.GameTestException;
 import net.minecraft.test.GameTestState;
-import net.minecraft.test.XmlReportingTestCompletionListener;
+import org.ladysnake.elmendorf.impl.FixedGameTestState;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.w3c.dom.Element;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
+@Mixin(GameTestState.class)
+public abstract class GameTestStateMixin implements FixedGameTestState {
+    // Keep track of replacement states, for tests that are run multiple times
+    private GameTestState cs$fallbackGameTest;
 
-@Mixin(XmlReportingTestCompletionListener.class)
-public abstract class XmlReportingTestCompletionListenerMixin {
-    @ModifyVariable(method = "onTestFailed", at = @At(value = "INVOKE", target = "Lorg/w3c/dom/Element;setAttribute(Ljava/lang/String;Ljava/lang/String;)V", shift = At.Shift.AFTER))
-    private Element logErrorStacktrace(Element el, GameTestState test) {
-        // If not a basic assertion, show the stacktrace too
-        Throwable t = test.getThrowable();
-        if (t != null && !(t instanceof GameTestException)) {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            PrintWriter w = new PrintWriter(out);
-            t.printStackTrace(w);
-            w.flush();
-            el.setTextContent(out.toString(StandardCharsets.UTF_8));
-        }
+    @Override
+    public void cs$setReplacementGameTest(GameTestState state) {
+        this.cs$fallbackGameTest = state;
+    }
 
-        return el;
+    @Override
+    public GameTestState cs$getReplacementGameTest() {
+        return this.cs$fallbackGameTest == null ? (GameTestState) (Object) this : ((FixedGameTestState) this.cs$fallbackGameTest).cs$getReplacementGameTest();
     }
 }

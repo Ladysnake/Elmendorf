@@ -20,19 +20,19 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
  * OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.ladysnake.elmendorf.impl.mixin;
+package org.ladysnake.elmendorf.impl.mixin;
 
 import com.mojang.authlib.GameProfile;
-import io.github.ladysnake.elmendorf.CheckedConnection;
-import io.github.ladysnake.elmendorf.ConnectionTestConfiguration;
-import io.github.ladysnake.elmendorf.ElmendorfTestContext;
-import io.github.ladysnake.elmendorf.impl.MockClientConnection;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.test.TestContext;
 import net.minecraft.util.math.Vec3d;
+import org.ladysnake.elmendorf.CheckedConnection;
+import org.ladysnake.elmendorf.ConnectionTestConfiguration;
+import org.ladysnake.elmendorf.ElmendorfTestContext;
+import org.ladysnake.elmendorf.impl.MockClientConnection;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 

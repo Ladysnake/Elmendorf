@@ -20,8 +20,25 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
  * OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.ladysnake.elmendorf;
+package org.ladysnake.ripstop;
 
-public interface ConnectionTestConfiguration {
-    void toFlushPacketsEachTick(boolean flush);
+import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
+import net.minecraft.entity.EntityType;
+import net.minecraft.test.GameTest;
+import net.minecraft.test.GameTestException;
+import net.minecraft.test.TestContext;
+import org.ladysnake.elmendorf.ByteBufChecker;
+import org.ladysnake.elmendorf.GameTestUtil;
+
+public class RipstopCcaTestSuite implements FabricGameTest {
+    @GameTest(templateName = EMPTY_STRUCTURE)
+    public void testComponentSyncChecks(TestContext ctx) {
+        var player = ctx.spawnServerPlayer(5, 0, 5);
+        var key = RipstopComponents.TEST;
+        var entity = ctx.spawnEntity(EntityType.AXOLOTL, 1, 0, 1);
+        key.sync(entity);
+        GameTestUtil.assertThrows("Expected " + player + " to provide component ripstop:test-component", GameTestException.class, () -> ctx.verifyConnection(player, conn -> conn.sentEntityComponentUpdate(player, key, ByteBufChecker::noMoreData)));
+        ctx.verifyConnection(player, conn -> conn.sentEntityComponentUpdate(entity, key, ByteBufChecker::noMoreData));
+        ctx.complete();
+    }
 }

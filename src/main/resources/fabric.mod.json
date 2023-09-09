@@ -32,7 +32,7 @@
   "custom": {
     "loom:injected_interfaces": {
       "net/minecraft/class_4516": [
-        "io/github/ladysnake/elmendorf/ElmendorfTestContext"
+        "org/ladysnake/elmendorf/ElmendorfTestContext"
       ]
     }
   }

@@ -20,35 +20,27 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
  * OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.ladysnake.elmendorf.impl.mixin.flakyfix;
+package org.ladysnake.elmendorf.impl.mixin.flakyfix;
 
-import io.github.ladysnake.elmendorf.impl.FixedGameTestState;
 import net.minecraft.test.GameTestState;
-import net.minecraft.test.TestSet;
+import net.minecraft.test.TestManager;
+import org.ladysnake.elmendorf.impl.FixedGameTestState;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.ListIterator;
 
-@Mixin(TestSet.class)
-public abstract class TestSetMixin {
+@Mixin(TestManager.class)
+public abstract class TestManagerMixin {
     @Shadow @Final private Collection<GameTestState> tests;
 
-    @Inject(method = "isDone", at = @At("HEAD"))
-    private void replaceTestStates(CallbackInfoReturnable<Boolean> cir) {
-        for (var it = ((List<GameTestState>)this.tests).listIterator(); it.hasNext(); ) {
-            var test = it.next();
-            var replacement = ((FixedGameTestState) test).cs$getReplacementGameTest();
-
-            if (replacement != test) {
-                it.set(replacement);
-            }
-        }
+    // Ensure that when a test is restarted, it keeps track of its successor state
+    @Inject(method = "start", at = @At("HEAD"))
+    private void linkReplacementTests(GameTestState test, CallbackInfo ci) {
+        this.tests.stream().filter(t -> t.getTestFunction() == test.getTestFunction()).findFirst().ifPresent(t -> ((FixedGameTestState) t).cs$setReplacementGameTest(test));
     }
 }

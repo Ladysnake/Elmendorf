@@ -20,15 +20,22 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
  * OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.ladysnake.elmendorf.impl.mixin;
+package org.ladysnake.elmendorf;
 
-import net.minecraft.network.ClientConnection;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
+import net.minecraft.server.network.ServerPlayerEntity;
 
-@Mixin(ServerPlayNetworkHandler.class)
-public interface ServerPlayNetworkHandlerAccessor {
-    @Accessor("connection")
-    ClientConnection elmendorf$getConnection();
+import java.util.function.Consumer;
+
+public interface ElmendorfTestContext {
+    default ServerPlayerEntity spawnServerPlayer(double x, double y, double z) {
+        throw new UnsupportedOperationException();
+    }
+
+    default void configureConnection(ServerPlayerEntity player, Consumer<ConnectionTestConfiguration> configurator) {
+
+    }
+
+    default void verifyConnection(ServerPlayerEntity player, Consumer<CheckedConnection> verifier) {
+
+    }
 }

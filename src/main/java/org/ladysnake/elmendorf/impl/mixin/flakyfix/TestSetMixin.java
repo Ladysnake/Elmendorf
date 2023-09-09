@@ -20,31 +20,34 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
  * OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package io.github.ladysnake.elmendorf;
+package org.ladysnake.elmendorf.impl.mixin.flakyfix;
 
-import net.minecraft.test.GameTestException;
-import org.jetbrains.annotations.Nullable;
-import org.junit.Assert;
-import org.junit.function.ThrowingRunnable;
+import net.minecraft.test.GameTestState;
+import net.minecraft.test.TestSet;
+import org.ladysnake.elmendorf.impl.FixedGameTestState;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-public final class GameTestUtil {
-    public static void assertTrue(String errorMessage, boolean b) {
-        if (!b) throw new GameTestException(errorMessage);
-    }
+import java.util.Collection;
+import java.util.List;
 
-    public static void assertFalse(String errorMessage, boolean b) {
-        if (b) throw new GameTestException(errorMessage);
-    }
+@Mixin(TestSet.class)
+public abstract class TestSetMixin {
+    @Shadow @Final private Collection<GameTestState> tests;
 
-    public static void assertThrows(Class<? extends Throwable> expectedThrowable, ThrowingRunnable runnable) {
-        assertThrows(null, expectedThrowable, runnable);
-    }
+    @Inject(method = "isDone", at = @At("HEAD"))
+    private void replaceTestStates(CallbackInfoReturnable<Boolean> cir) {
+        for (var it = ((List<GameTestState>)this.tests).listIterator(); it.hasNext(); ) {
+            var test = it.next();
+            var replacement = ((FixedGameTestState) test).cs$getReplacementGameTest();
 
-    public static void assertThrows(@Nullable String errorMessage, Class<? extends Throwable> expectedThrowable, ThrowingRunnable runnable) {
-        try {
-            Assert.assertThrows(errorMessage, expectedThrowable, runnable);
-        } catch (AssertionError e) {
-            throw (GameTestException) new GameTestException(e.getMessage()).initCause(e.getCause());
+            if (replacement != test) {
+                it.set(replacement);
+            }
         }
     }
 }
