@@ -24,15 +24,18 @@ package org.ladysnake.elmendorf.impl;
 
 import dev.onyxstudios.cca.api.v3.component.ComponentKey;
 import dev.onyxstudios.cca.internal.entity.CardinalComponentsEntity;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.PacketCallbacks;
+import net.minecraft.network.listener.PacketListener;
 import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
+import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
 import net.minecraft.test.GameTestException;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ladysnake.elmendorf.ByteBufChecker;
@@ -76,6 +79,11 @@ public final class MockClientConnection extends ClientConnection implements Chec
     }
 
     @Override
+    public void setPacketListener(PacketListener packetListener) {
+        // NO-OP
+    }
+
+    @Override
     public CheckedConnection allowNoPacketMatch(boolean allow) {
         this.allowNoPacketMatch = allow;
         return this;
@@ -93,7 +101,7 @@ public final class MockClientConnection extends ClientConnection implements Chec
 
     @Override
     public PacketSequenceChecker sent(Identifier channelId) {
-        return sent(packet -> packet instanceof CustomPayloadS2CPacket p && Objects.equals(p.getChannel(), channelId), "Expected packet for channel " + channelId);
+        return sent(packet -> packet instanceof CustomPayloadS2CPacket p && Objects.equals(p.payload().id(), channelId), "Expected packet for channel " + channelId);
     }
 
     @Override
@@ -110,8 +118,8 @@ public final class MockClientConnection extends ClientConnection implements Chec
     @NotNull
     private static Predicate<Packet<?>> createCheckerTest(Identifier channelId, Consumer<ByteBufChecker> expect, List<GameTestException> suppressed) {
         return packet -> {
-            if (packet instanceof CustomPayloadS2CPacket p && Objects.equals(p.getChannel(), channelId)) {
-                var checker = new ByteBufChecker(p.getData());
+            if (packet instanceof CustomPayloadS2CPacket p && Objects.equals(p.payload().id(), channelId)) {
+                var checker = new ByteBufChecker(Util.make(PacketByteBufs.create(), p.payload()::write));
                 try {
                     expect.accept(checker);
                     return true;
@@ -159,7 +167,7 @@ public final class MockClientConnection extends ClientConnection implements Chec
     }
 
     @Override
-    public void send(Packet<?> packet, @Nullable PacketCallbacks callback) {
+    public void send(Packet<?> packet, @Nullable PacketCallbacks callback, boolean flush) {
         this.packetQueue.add(new SentPacket(packet, this.ticks));
         if (callback != null) callback.onSuccess();
     }
@@ -213,7 +221,7 @@ public final class MockClientConnection extends ClientConnection implements Chec
 
         @Override
         public PacketSequenceChecker thenSent(Delay delay, Identifier channelId) {
-            return thenSent(delay, packet -> packet instanceof CustomPayloadS2CPacket p && Objects.equals(p.getChannel(), channelId), "Expected packet for channel " + channelId);
+            return thenSent(delay, packet -> packet instanceof CustomPayloadS2CPacket p && Objects.equals(p.payload().id(), channelId), "Expected packet for channel " + channelId);
         }
 
         @Override

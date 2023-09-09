@@ -23,11 +23,11 @@
 package org.ladysnake.elmendorf.impl.mixin;
 
 import net.minecraft.network.ClientConnection;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
+import net.minecraft.server.network.ServerCommonNetworkHandler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(ServerPlayNetworkHandler.class)
+@Mixin(ServerCommonNetworkHandler.class)
 public interface ServerPlayNetworkHandlerAccessor {
     @Accessor("connection")
     ClientConnection elmendorf$getConnection();

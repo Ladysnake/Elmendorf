@@ -24,6 +24,8 @@ package org.ladysnake.elmendorf.impl.mixin;
 
 import com.mojang.authlib.GameProfile;
 import net.minecraft.network.NetworkSide;
+import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
+import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -47,10 +49,16 @@ public abstract class TestContextMixin implements ElmendorfTestContext {
 
     @Override
     public ServerPlayerEntity spawnServerPlayer(double x, double y, double z) {
-        var mockPlayer = new ServerPlayerEntity(this.getWorld().getServer(), this.getWorld(), new GameProfile(UUID.randomUUID(), "test-mock-player"));
-        var connection = new MockClientConnection(NetworkSide.CLIENTBOUND);
+        GameProfile profile = new GameProfile(UUID.randomUUID(), "test-mock-player");
+        var mockPlayer = new ServerPlayerEntity(
+                this.getWorld().getServer(),
+                this.getWorld(),
+                profile,
+                SyncedClientOptions.createDefault()
+        );
+        var connection = new MockClientConnection(NetworkSide.SERVERBOUND);
         mockPlayer.setPosition(this.getAbsolute(new Vec3d(x, y, z)));
-        mockPlayer.networkHandler = new ServerPlayNetworkHandler(this.getWorld().getServer(), connection, mockPlayer);
+        mockPlayer.networkHandler = new ServerPlayNetworkHandler(this.getWorld().getServer(), connection, mockPlayer, ConnectedClientData.createDefault(profile));
         this.getWorld().spawnEntity(mockPlayer);
         return mockPlayer;
     }

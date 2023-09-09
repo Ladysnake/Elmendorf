@@ -11,16 +11,17 @@ You can add the library by inserting the following in your `build.gradle` :
 repositories {
 	maven { 
         name = "Ladysnake Mods"
-        url = "https://ladysnake.jfrog.io/artifactory/mods"
+        url = "https://maven.ladysnake.org/releases"
         content {
             includeGroup 'io.github.ladysnake'
+            includeGroup 'org.ladysnake'
             includeGroupByRegex 'io\\.github\\.onyxstudios.*'
         }
     }
 }
 
 dependencies {
-    modImplementation "io.github.ladysnake:elmendorf:${elmendorf_version}"
+    modImplementation "org.ladysnake:elmendorf:${elmendorf_version}"
 }
 ```
 
