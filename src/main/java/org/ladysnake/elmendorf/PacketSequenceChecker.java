@@ -22,11 +22,11 @@
  */
 package org.ladysnake.elmendorf;
 
-import dev.onyxstudios.cca.api.v3.component.ComponentKey;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.Packet;
 import org.jetbrains.annotations.Nullable;
+import org.ladysnake.cca.api.v3.component.ComponentKey;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;

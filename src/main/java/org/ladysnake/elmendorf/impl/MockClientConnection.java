@@ -22,7 +22,6 @@
  */
 package org.ladysnake.elmendorf.impl;
 
-import dev.onyxstudios.cca.api.v3.component.ComponentKey;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.NetworkSide;
@@ -35,6 +34,8 @@ import net.minecraft.test.GameTestException;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.ladysnake.cca.api.v3.component.ComponentKey;
+import org.ladysnake.cca.internal.entity.CardinalComponentsEntity;
 import org.ladysnake.elmendorf.ByteBufChecker;
 import org.ladysnake.elmendorf.CheckedConnection;
 import org.ladysnake.elmendorf.ConnectionTestConfiguration;
@@ -98,7 +99,7 @@ public final class MockClientConnection extends ClientConnection implements Chec
 
     @Override
     public PacketSequenceChecker sent(CustomPayload.Id<?> channelId) {
-        return sent(packet -> packet instanceof CustomPayloadS2CPacket p && Objects.equals(p.payload().getId().id(), channelId), "Expected packet for channel " + channelId);
+        return sent(packet -> packet instanceof CustomPayloadS2CPacket p && Objects.equals(p.payload().getId(), channelId), "Expected packet for channel " + channelId);
     }
 
     @Override
@@ -137,18 +138,20 @@ public final class MockClientConnection extends ClientConnection implements Chec
         return new PacketSequenceCheckerImpl(errorMessage, packets);
     }
 
+    // Don't access internal API at home kids
+    @SuppressWarnings("UnstableApiUsage")
     @Override
     public PacketSequenceChecker sentEntityComponentUpdate(@Nullable Entity synced, ComponentKey<?> key, Consumer<ByteBufChecker> expect) {
         if (synced != null) GameTestUtil.assertTrue("Expected " + synced + " to provide component " + key.getId(), key.isProvidedBy(synced));
         List<GameTestException> suppressed = new ArrayList<>();
         try {
-            throw new UnsupportedOperationException();
-            // Don't access internal API at home kids
-            //noinspection UnstableApiUsage
-//            return sent(
-//                    createCheckerTest(CardinalComponentsEntity.PACKET_ID, ((Consumer<ByteBufChecker>) c -> c.checkInt(synced == null ? ByteBufChecker.any() : synced.getId()).checkIdentifier(key.getId())).andThen(expect), suppressed),
-//                    "Expected sync packet for component " + key.getId()
-//            );
+            return sent(
+                    createCheckerTest(CardinalComponentsEntity.PACKET_ID, payload -> {
+                        GameTestUtil.assertTrue("Expected component update to target entity " + synced, synced == null || payload.targetData() == synced.getId());
+                        expect.accept(new ByteBufChecker(payload.buf()));
+                    }, suppressed),
+                    "Expected sync packet for component " + key.getId()
+            );
         } catch (GameTestException e) {
             suppressed.forEach(e::addSuppressed);
             throw e;
@@ -234,18 +237,21 @@ public final class MockClientConnection extends ClientConnection implements Chec
             }
         }
 
+        // Don't access internal API at home kids
+        @SuppressWarnings("UnstableApiUsage")
         @Override
         public PacketSequenceChecker thenSentComponentUpdate(Delay delay, @Nullable Entity synced, ComponentKey<?> key, Consumer<ByteBufChecker> expect) {
             if (synced != null) GameTestUtil.assertTrue("Expected " + synced + " to provide component " + key.getId(), key.isProvidedBy(synced));
             List<GameTestException> suppressed = new ArrayList<>();
             try {
-                throw new UnsupportedOperationException();
-                // Don't access internal API at home kids
-                //noinspection UnstableApiUsage
-//                return thenSent(delay,
-//                        createCheckerTest(CardinalComponentsEntity.PACKET_ID, ((Consumer<ByteBufChecker>) c -> c.checkInt(synced == null ? ByteBufChecker.any() : synced.getId()).checkIdentifier(key.getId())).andThen(expect), suppressed),
-//                        "Expected sync packet for component " + key.getId()
-//                );
+                return thenSent(
+                        delay,
+                        createCheckerTest(CardinalComponentsEntity.PACKET_ID, payload -> {
+                            GameTestUtil.assertTrue("Expected component update to target entity " + synced, synced == null || payload.targetData() == synced.getId());
+                            expect.accept(new ByteBufChecker(payload.buf()));
+                        }, suppressed),
+                        "Expected sync packet for component " + key.getId()
+                );
             } catch (GameTestException e) {
                 suppressed.forEach(e::addSuppressed);
                 throw e;

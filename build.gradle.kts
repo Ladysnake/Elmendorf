@@ -23,6 +23,7 @@ chenille {
 val dummy: SourceSet by sourceSets.creating {}
 
 repositories {
+	mavenLocal()
 	mavenCentral()
 	chenille.repositories {
 		ladysnake()
@@ -43,8 +44,8 @@ dependencies {
 
 	modApi(fabricApi.module("fabric-gametest-api-v1", fabricApiVersion))
 	modLocalImplementation(fabricApi.module("fabric-networking-api-v1", fabricApiVersion))
-	modCompileOnly("dev.onyxstudios.cardinal-components-api:cardinal-components-base:${ccaVersion}")
-	modCompileOnly("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${ccaVersion}")
+	modCompileOnly("org.ladysnake.cardinal-components-api:cardinal-components-base:${ccaVersion}")
+	modCompileOnly("org.ladysnake.cardinal-components-api:cardinal-components-entity:${ccaVersion}")
 	api("junit:junit:4.13.2")
 	"testmodImplementation"(sourceSets.main.get().output)
 	annotationProcessor(dummy.output)
