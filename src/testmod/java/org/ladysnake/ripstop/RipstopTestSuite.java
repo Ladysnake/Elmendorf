@@ -25,12 +25,12 @@ package org.ladysnake.ripstop;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.s2c.play.BlockBreakingProgressS2CPacket;
 import net.minecraft.network.packet.s2c.play.ClearTitleS2CPacket;
 import net.minecraft.test.GameTest;
 import net.minecraft.test.GameTestException;
 import net.minecraft.test.TestContext;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import org.ladysnake.elmendorf.GameTestUtil;
 import org.ladysnake.elmendorf.PacketSequenceChecker;
@@ -45,14 +45,14 @@ public class RipstopTestSuite implements FabricGameTest {
         player.networkHandler.sendPacket(new ClearTitleS2CPacket(false));
         ctx.verifyConnection(player, conn -> conn.sent(ClearTitleS2CPacket.class).atLeast(2));
         GameTestUtil.assertThrows(GameTestException.class,
-                () -> ctx.verifyConnection(player, conn -> conn.sent(new Identifier("ribbit"))));
+                () -> ctx.verifyConnection(player, conn -> conn.sent(CustomPayload.id("ribbit"))));
         var buf = PacketByteBufs.create();
         buf.writeBlockPos(BlockPos.ORIGIN);
         buf.writeString("test");
-        player.networkHandler.sendPacket(ServerPlayNetworking.createS2CPacket(new Identifier("a"), buf));
-        ctx.verifyConnection(player, conn -> conn.sent(new Identifier("a"), c -> c.checkBlockPos(any()).checkString("test").noMoreData()));
+        player.networkHandler.sendPacket(ServerPlayNetworking.createS2CPacket(new TestPayload(buf)));
+        ctx.verifyConnection(player, conn -> conn.sent(TestPayload.ID, p -> conn.checkByteBuf(p.rawData(), c -> c.checkBlockPos(any()).checkString("test").noMoreData())));
         GameTestUtil.assertThrows(GameTestException.class,
-                () -> ctx.verifyConnection(player, conn -> conn.sent(new Identifier("a"), c -> c.checkBoolean(false).noMoreData())));
+                () -> ctx.verifyConnection(player, conn -> conn.sent(TestPayload.ID, p -> conn.checkByteBuf(p.rawData(), c -> c.checkBoolean(false).noMoreData()))));
         ctx.complete();
     }
 
@@ -64,13 +64,13 @@ public class RipstopTestSuite implements FabricGameTest {
         player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(1, BlockPos.ORIGIN, 5));
         var buf1 = PacketByteBufs.create();
         buf1.writeBoolean(true);
-        player.networkHandler.sendPacket(ServerPlayNetworking.createS2CPacket(new Identifier("a"), buf1));
+        player.networkHandler.sendPacket(ServerPlayNetworking.createS2CPacket(new TestPayload(buf1)));
         ctx.verifyConnection(player, conn ->
                 conn.sent(BlockBreakingProgressS2CPacket.class, packet -> packet.getEntityId() == 1)
                 // 3 matching packets
                 .thenSent(PacketSequenceChecker.Delay.IMMEDIATELY, BlockBreakingProgressS2CPacket.class)
                 // 2 matching packets: the last BlockBreaking packet is logically not followed by another one
-                .thenSent(PacketSequenceChecker.Delay.SAME_TICK, new Identifier("a"), c -> c.checkBoolean(true).noMoreData())
+                .thenSent(PacketSequenceChecker.Delay.SAME_TICK, TestPayload.ID, p -> conn.checkByteBuf(p.rawData(), c -> c.checkBoolean(true).noMoreData()))
                 // still 2 matching packets: all BlockBreaking packets are followed by the custom packet in the same tick
                 .exactly(2));
         ctx.complete();

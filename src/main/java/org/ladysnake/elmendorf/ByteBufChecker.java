@@ -46,7 +46,7 @@ public final class ByteBufChecker {
     }
 
     public ByteBufChecker checkBlockPos(@Nullable BlockPos expected) {
-        return check(BlockPos.class, expected, PacketByteBuf::readBlockPos);
+        return check(BlockPos.class, expected, buf -> PacketByteBuf.readBlockPos(buf));
     }
 
     public ByteBufChecker checkChunkPos(@Nullable ChunkPos expected) {

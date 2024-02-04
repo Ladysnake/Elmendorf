@@ -23,19 +23,16 @@
 package org.ladysnake.elmendorf.impl;
 
 import dev.onyxstudios.cca.api.v3.component.ComponentKey;
-import dev.onyxstudios.cca.internal.entity.CardinalComponentsEntity;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.PacketCallbacks;
 import net.minecraft.network.listener.PacketListener;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
 import net.minecraft.test.GameTestException;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Util;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ladysnake.elmendorf.ByteBufChecker;
@@ -79,7 +76,7 @@ public final class MockClientConnection extends ClientConnection implements Chec
     }
 
     @Override
-    public void setPacketListener(PacketListener packetListener) {
+    public void setInitialPacketListener(PacketListener packetListener) {
         // NO-OP
     }
 
@@ -100,12 +97,12 @@ public final class MockClientConnection extends ClientConnection implements Chec
     }
 
     @Override
-    public PacketSequenceChecker sent(Identifier channelId) {
-        return sent(packet -> packet instanceof CustomPayloadS2CPacket p && Objects.equals(p.payload().id(), channelId), "Expected packet for channel " + channelId);
+    public PacketSequenceChecker sent(CustomPayload.Id<?> channelId) {
+        return sent(packet -> packet instanceof CustomPayloadS2CPacket p && Objects.equals(p.payload().getId().id(), channelId), "Expected packet for channel " + channelId);
     }
 
     @Override
-    public PacketSequenceChecker sent(Identifier channelId, Consumer<ByteBufChecker> expect) {
+    public <T extends CustomPayload> PacketSequenceChecker sent(CustomPayload.Id<T> channelId, Consumer<T> expect) {
         List<GameTestException> suppressed = new ArrayList<>();
         try {
             return sent(createCheckerTest(channelId, expect, suppressed), "Expected packet for channel " + channelId);
@@ -116,12 +113,13 @@ public final class MockClientConnection extends ClientConnection implements Chec
     }
 
     @NotNull
-    private static Predicate<Packet<?>> createCheckerTest(Identifier channelId, Consumer<ByteBufChecker> expect, List<GameTestException> suppressed) {
+    private static <T extends CustomPayload> Predicate<Packet<?>> createCheckerTest(CustomPayload.Id<T> channelId, Consumer<T> expect, List<GameTestException> suppressed) {
         return packet -> {
-            if (packet instanceof CustomPayloadS2CPacket p && Objects.equals(p.payload().id(), channelId)) {
-                var checker = new ByteBufChecker(Util.make(PacketByteBufs.create(), p.payload()::write));
+            if (packet instanceof CustomPayloadS2CPacket p && Objects.equals(p.payload().getId(), channelId)) {
                 try {
-                    expect.accept(checker);
+                    // The id is right, so the type must be right
+                    @SuppressWarnings("unchecked") T payload = (T) p.payload();
+                    expect.accept(payload);
                     return true;
                 } catch (GameTestException e) {
                     suppressed.add(e);
@@ -144,12 +142,13 @@ public final class MockClientConnection extends ClientConnection implements Chec
         if (synced != null) GameTestUtil.assertTrue("Expected " + synced + " to provide component " + key.getId(), key.isProvidedBy(synced));
         List<GameTestException> suppressed = new ArrayList<>();
         try {
+            throw new UnsupportedOperationException();
             // Don't access internal API at home kids
             //noinspection UnstableApiUsage
-            return sent(
-                    createCheckerTest(CardinalComponentsEntity.PACKET_ID, ((Consumer<ByteBufChecker>) c -> c.checkInt(synced == null ? ByteBufChecker.any() : synced.getId()).checkIdentifier(key.getId())).andThen(expect), suppressed),
-                    "Expected sync packet for component " + key.getId()
-            );
+//            return sent(
+//                    createCheckerTest(CardinalComponentsEntity.PACKET_ID, ((Consumer<ByteBufChecker>) c -> c.checkInt(synced == null ? ByteBufChecker.any() : synced.getId()).checkIdentifier(key.getId())).andThen(expect), suppressed),
+//                    "Expected sync packet for component " + key.getId()
+//            );
         } catch (GameTestException e) {
             suppressed.forEach(e::addSuppressed);
             throw e;
@@ -173,7 +172,7 @@ public final class MockClientConnection extends ClientConnection implements Chec
     }
 
     @Override
-    public void disableAutoRead() {
+    public void tryDisableAutoRead() {
         // NO-OP
     }
 
@@ -220,12 +219,12 @@ public final class MockClientConnection extends ClientConnection implements Chec
         }
 
         @Override
-        public PacketSequenceChecker thenSent(Delay delay, Identifier channelId) {
-            return thenSent(delay, packet -> packet instanceof CustomPayloadS2CPacket p && Objects.equals(p.payload().id(), channelId), "Expected packet for channel " + channelId);
+        public PacketSequenceChecker thenSent(Delay delay, CustomPayload.Id<?> channelId) {
+            return thenSent(delay, packet -> packet instanceof CustomPayloadS2CPacket p && Objects.equals(p.payload().getId(), channelId), "Expected packet for channel " + channelId);
         }
 
         @Override
-        public PacketSequenceChecker thenSent(Delay delay, Identifier channelId, Consumer<ByteBufChecker> expect) {
+        public <T extends CustomPayload> PacketSequenceChecker thenSent(Delay delay, CustomPayload.Id<T> channelId, Consumer<T> expect) {
             List<GameTestException> suppressed = new ArrayList<>();
             try {
                 return this.thenSent(delay, createCheckerTest(channelId, expect, suppressed), "Expected packet for channel " + channelId);
@@ -240,12 +239,13 @@ public final class MockClientConnection extends ClientConnection implements Chec
             if (synced != null) GameTestUtil.assertTrue("Expected " + synced + " to provide component " + key.getId(), key.isProvidedBy(synced));
             List<GameTestException> suppressed = new ArrayList<>();
             try {
+                throw new UnsupportedOperationException();
                 // Don't access internal API at home kids
                 //noinspection UnstableApiUsage
-                return thenSent(delay,
-                        createCheckerTest(CardinalComponentsEntity.PACKET_ID, ((Consumer<ByteBufChecker>) c -> c.checkInt(synced == null ? ByteBufChecker.any() : synced.getId()).checkIdentifier(key.getId())).andThen(expect), suppressed),
-                        "Expected sync packet for component " + key.getId()
-                );
+//                return thenSent(delay,
+//                        createCheckerTest(CardinalComponentsEntity.PACKET_ID, ((Consumer<ByteBufChecker>) c -> c.checkInt(synced == null ? ByteBufChecker.any() : synced.getId()).checkIdentifier(key.getId())).andThen(expect), suppressed),
+//                        "Expected sync packet for component " + key.getId()
+//                );
             } catch (GameTestException e) {
                 suppressed.forEach(e::addSuppressed);
                 throw e;

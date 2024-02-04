@@ -1,6 +1,6 @@
 plugins {
-	id("fabric-loom") version "1.3-SNAPSHOT"
-	id("io.github.ladysnake.chenille") version "0.11.3"
+	id("fabric-loom") version "1.5-SNAPSHOT"
+	id("io.github.ladysnake.chenille") version "0.12.0"
 	id("io.github.juuxel.loom-quiltflower") version "1.6.0"
 }
 

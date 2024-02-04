@@ -24,8 +24,8 @@ package org.ladysnake.elmendorf;
 
 import dev.onyxstudios.cca.api.v3.component.ComponentKey;
 import net.minecraft.entity.Entity;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.Packet;
-import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
@@ -65,12 +65,12 @@ public interface PacketSequenceChecker {
     /**
      * Creates a packet sequence checker that looks for a matching packet sent after this packet within the given {@code delay}
      */
-    PacketSequenceChecker thenSent(Delay delay, Identifier channelId);
+    PacketSequenceChecker thenSent(Delay delay, CustomPayload.Id<?> channelId);
 
     /**
      * Creates a packet sequence checker that looks for a matching packet sent after this packet within the given {@code delay}
      */
-    PacketSequenceChecker thenSent(Delay delay, Identifier channelId, Consumer<ByteBufChecker> expect);
+    <T extends CustomPayload> PacketSequenceChecker thenSent(Delay delay, CustomPayload.Id<T> channelId, Consumer<T> expect);
 
     /**
      * Creates a packet sequence checker that looks for a matching Cardinal Components Entity sync packet sent after this packet within the given {@code delay}

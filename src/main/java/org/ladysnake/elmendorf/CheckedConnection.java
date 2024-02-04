@@ -24,8 +24,9 @@ package org.ladysnake.elmendorf;
 
 import dev.onyxstudios.cca.api.v3.component.ComponentKey;
 import net.minecraft.entity.Entity;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.Packet;
-import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Queue;
@@ -48,9 +49,13 @@ public interface CheckedConnection {
 
     <P extends Packet<?>> PacketSequenceChecker sent(Class<P> packetType, Predicate<P> expect);
 
-    PacketSequenceChecker sent(Identifier channelId);
+    PacketSequenceChecker sent(CustomPayload.Id<?> channelId);
 
-    PacketSequenceChecker sent(Identifier channelId, Consumer<ByteBufChecker> expect);
+    <T extends CustomPayload> PacketSequenceChecker sent(CustomPayload.Id<T> channelId, Consumer<T> expect);
+
+    default void checkByteBuf(PacketByteBuf buf, Consumer<ByteBufChecker> expect) {
+        expect.accept(new ByteBufChecker(buf));
+    }
 
     PacketSequenceChecker sent(Predicate<Packet<?>> test, String errorMessage);
 
