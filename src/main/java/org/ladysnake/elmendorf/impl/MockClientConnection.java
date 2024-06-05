@@ -24,6 +24,7 @@ package org.ladysnake.elmendorf.impl;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.network.ClientConnection;
+import net.minecraft.network.DisconnectionInfo;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.PacketCallbacks;
 import net.minecraft.network.listener.PacketListener;
@@ -31,7 +32,6 @@ import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
 import net.minecraft.test.GameTestException;
-import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
@@ -180,9 +180,9 @@ public final class MockClientConnection extends ClientConnection implements Chec
     }
 
     @Override
-    public void disconnect(Text disconnectReason) {
+    public void disconnect(DisconnectionInfo disconnectReason) {
         //noinspection ConstantConditions
-        ((ClientConnectionAccessor)(Object)this).setDisconnectReason(disconnectReason);
+        ((ClientConnectionAccessor)(Object)this).setDisconnectionInfo(disconnectReason);
     }
 
     public record PacketSequenceCheckerImpl(String defaultErrorMessage, List<SentPacket> packets) implements PacketSequenceChecker {

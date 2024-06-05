@@ -23,7 +23,7 @@
 package org.ladysnake.ripstop;
 
 import net.minecraft.entity.passive.AxolotlEntity;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import org.ladysnake.cca.api.v3.component.Component;
@@ -35,18 +35,18 @@ import org.ladysnake.cca.api.v3.entity.EntityComponentFactoryRegistry;
 import org.ladysnake.cca.api.v3.entity.EntityComponentInitializer;
 
 public class RipstopComponents implements EntityComponentInitializer {
-    public static final ComponentKey<Component> TEST = ComponentRegistry.getOrCreate(new Identifier("ripstop", "test-component"), Component.class);
+    public static final ComponentKey<Component> TEST = ComponentRegistry.getOrCreate(Identifier.of("ripstop", "test-component"), Component.class);
 
     @Override
     public void registerEntityComponentFactories(EntityComponentFactoryRegistry registry) {
         class Impl extends TransientComponent.SimpleImpl implements AutoSyncedComponent {
             @Override
-            public void writeSyncPacket(PacketByteBuf buf, ServerPlayerEntity recipient) {
+            public void writeSyncPacket(RegistryByteBuf buf, ServerPlayerEntity recipient) {
 
             }
 
             @Override
-            public void applySyncPacket(PacketByteBuf buf) {
+            public void applySyncPacket(RegistryByteBuf buf) {
 
             }
         }

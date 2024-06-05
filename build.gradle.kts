@@ -1,7 +1,6 @@
 plugins {
-	id("fabric-loom") version "1.5-SNAPSHOT"
-	id("io.github.ladysnake.chenille") version "0.12.0"
-	id("io.github.juuxel.loom-quiltflower") version "1.6.0"
+	id("fabric-loom") version "1.6-SNAPSHOT"
+	id("io.github.ladysnake.chenille") version "0.13.0"
 }
 
 version = providers.gradleProperty("mod_version").get()
@@ -25,8 +24,9 @@ val dummy: SourceSet by sourceSets.creating {}
 repositories {
 	mavenLocal()
 	mavenCentral()
-	chenille.repositories {
-		ladysnake()
+	maven {
+		name = "Ladysnake Mods"
+		setUrl("https://maven.ladysnake.org/releases")
 	}
 }
 

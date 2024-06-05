@@ -23,12 +23,12 @@
 package org.ladysnake.elmendorf.impl.mixin;
 
 import net.minecraft.network.ClientConnection;
-import net.minecraft.text.Text;
+import net.minecraft.network.DisconnectionInfo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(ClientConnection.class)
 public interface ClientConnectionAccessor {
     @Accessor
-    void setDisconnectReason(Text reason);
+    void setDisconnectionInfo(DisconnectionInfo reason);
 }
