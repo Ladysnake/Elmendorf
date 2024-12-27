@@ -34,7 +34,7 @@ import net.minecraft.util.math.Vec3d;
 import org.ladysnake.elmendorf.CheckedConnection;
 import org.ladysnake.elmendorf.ConnectionTestConfiguration;
 import org.ladysnake.elmendorf.ElmendorfTestContext;
-import org.ladysnake.elmendorf.impl.MockClientConnection;
+import org.ladysnake.elmendorf.impl.TestableMockClientConnection;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
@@ -56,7 +56,7 @@ public abstract class TestContextMixin implements ElmendorfTestContext {
                 profile,
                 SyncedClientOptions.createDefault()
         );
-        var connection = new MockClientConnection(NetworkSide.SERVERBOUND);
+        var connection = new TestableMockClientConnection(NetworkSide.SERVERBOUND);
         mockPlayer.setPosition(this.getAbsolute(new Vec3d(x, y, z)));
         mockPlayer.networkHandler = new ServerPlayNetworkHandler(this.getWorld().getServer(), connection, mockPlayer, ConnectedClientData.createDefault(profile, false));
         this.getWorld().spawnEntity(mockPlayer);
@@ -65,11 +65,11 @@ public abstract class TestContextMixin implements ElmendorfTestContext {
 
     @Override
     public void configureConnection(ServerPlayerEntity player, Consumer<ConnectionTestConfiguration> configurator) {
-        configurator.accept(((MockClientConnection) ((ServerPlayNetworkHandlerAccessor) player.networkHandler).elmendorf$getConnection()));
+        configurator.accept(((TestableMockClientConnection) ((ServerPlayNetworkHandlerAccessor) player.networkHandler).elmendorf$getConnection()));
     }
 
     @Override
     public void verifyConnection(ServerPlayerEntity player, Consumer<CheckedConnection> verifier) {
-        verifier.accept(((MockClientConnection) ((ServerPlayNetworkHandlerAccessor) player.networkHandler).elmendorf$getConnection()));
+        verifier.accept(((TestableMockClientConnection) ((ServerPlayNetworkHandlerAccessor) player.networkHandler).elmendorf$getConnection()));
     }
 }

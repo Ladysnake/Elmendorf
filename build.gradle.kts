@@ -1,6 +1,6 @@
 plugins {
-	id("fabric-loom") version "1.6-SNAPSHOT"
-	id("io.github.ladysnake.chenille") version "0.13.0"
+	id("fabric-loom") version "1.8-SNAPSHOT"
+	id("io.github.ladysnake.chenille") version "0.14.0"
 }
 
 version = providers.gradleProperty("mod_version").get()

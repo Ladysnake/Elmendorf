@@ -50,7 +50,7 @@ public final class ByteBufChecker {
     }
 
     public ByteBufChecker checkChunkPos(@Nullable ChunkPos expected) {
-        return check(ChunkPos.class, expected, PacketByteBuf::readChunkPos);
+        return check(ChunkPos.class, expected, b -> b.readChunkPos());
     }
 
     public ByteBufChecker checkChunkSectionPos(@Nullable ChunkSectionPos expected) {
