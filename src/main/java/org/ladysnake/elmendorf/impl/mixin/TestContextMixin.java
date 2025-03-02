@@ -29,7 +29,9 @@ import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.test.GameTestException;
 import net.minecraft.test.TestContext;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 import org.ladysnake.elmendorf.CheckedConnection;
 import org.ladysnake.elmendorf.ConnectionTestConfiguration;
@@ -47,6 +49,8 @@ public abstract class TestContextMixin implements ElmendorfTestContext {
 
     @Shadow public abstract Vec3d getAbsolute(Vec3d pos);
 
+    @Shadow public abstract GameTestException createError(Text message);
+
     @Override
     public ServerPlayerEntity spawnServerPlayer(double x, double y, double z) {
         GameProfile profile = new GameProfile(UUID.randomUUID(), "test-mock-player");
@@ -56,7 +60,7 @@ public abstract class TestContextMixin implements ElmendorfTestContext {
                 profile,
                 SyncedClientOptions.createDefault()
         );
-        var connection = new TestableMockClientConnection(NetworkSide.SERVERBOUND);
+        var connection = new TestableMockClientConnection(NetworkSide.SERVERBOUND, (TestContext) (Object) this);
         mockPlayer.setPosition(this.getAbsolute(new Vec3d(x, y, z)));
         mockPlayer.networkHandler = new ServerPlayNetworkHandler(this.getWorld().getServer(), connection, mockPlayer, ConnectedClientData.createDefault(profile, false));
         this.getWorld().spawnEntity(mockPlayer);
@@ -71,5 +75,10 @@ public abstract class TestContextMixin implements ElmendorfTestContext {
     @Override
     public void verifyConnection(ServerPlayerEntity player, Consumer<CheckedConnection> verifier) {
         verifier.accept(((TestableMockClientConnection) ((ServerPlayNetworkHandlerAccessor) player.networkHandler).elmendorf$getConnection()));
+    }
+
+    @Override
+    public GameTestException createError(String errorMessage) {
+        return createError(Text.literal(errorMessage));
     }
 }

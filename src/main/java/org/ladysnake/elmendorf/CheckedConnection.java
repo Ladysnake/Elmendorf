@@ -53,9 +53,7 @@ public interface CheckedConnection {
 
     <T extends CustomPayload> PacketSequenceChecker sent(CustomPayload.Id<T> channelId, Consumer<T> expect);
 
-    default void checkByteBuf(PacketByteBuf buf, Consumer<ByteBufChecker> expect) {
-        expect.accept(new ByteBufChecker(buf));
-    }
+    void checkByteBuf(PacketByteBuf buf, Consumer<ByteBufChecker> expect);
 
     PacketSequenceChecker sent(Predicate<Packet<?>> test, String errorMessage);
 

@@ -9,7 +9,6 @@
     "TestContextMixin",
     "XmlReportingTestCompletionListenerMixin",
     "flakyfix.GameTestStateMixin",
-    "flakyfix.TestManagerMixin",
     "flakyfix.TestSetMixin"
   ],
   "injectors": {

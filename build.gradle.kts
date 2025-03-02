@@ -1,5 +1,5 @@
 plugins {
-	id("fabric-loom") version "1.8-SNAPSHOT"
+	id("fabric-loom") version "1.10-SNAPSHOT"
 	id("io.github.ladysnake.chenille") version "0.14.0"
 }
 
@@ -43,10 +43,10 @@ dependencies {
 	modImplementation("net.fabricmc:fabric-loader:${loaderVersion}")
 
 	modApi(fabricApi.module("fabric-gametest-api-v1", fabricApiVersion))
+	modImplementation(fabricApi.module("fabric-registry-sync-v0", fabricApiVersion))
 	modLocalImplementation(fabricApi.module("fabric-networking-api-v1", fabricApiVersion))
 	modCompileOnly("org.ladysnake.cardinal-components-api:cardinal-components-base:${ccaVersion}")
 	modCompileOnly("org.ladysnake.cardinal-components-api:cardinal-components-entity:${ccaVersion}")
-	api("junit:junit:4.13.2")
 	"testmodImplementation"(sourceSets.main.get().output)
 	annotationProcessor(dummy.output)
 }

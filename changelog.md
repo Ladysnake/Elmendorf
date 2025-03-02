@@ -1,4 +1,15 @@
 ------------------------------------------------------
+Version 0.15.0
+------------------------------------------------------
+Updated to 25w09b
+
+**Changes**
+- Methods in `GameTestUtil` have been moved to `ElmendorfTestContext`
+
+**Removals**
+- `Elmendord#registerTestClass`, at least for now
+
+------------------------------------------------------
 Version 0.14.0
 ------------------------------------------------------
 Updated to 1.21.4

@@ -23,9 +23,7 @@
 package org.ladysnake.ripstop;
 
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.Identifier;
-import org.ladysnake.elmendorf.Elmendorf;
 
 public class Ripstop implements ModInitializer {
     public static final String MOD_ID = "ripstop";
@@ -33,9 +31,5 @@ public class Ripstop implements ModInitializer {
         return Identifier.of(MOD_ID, path);
     }
     @Override
-    public void onInitialize() {
-        if (FabricLoader.getInstance().isModLoaded("cardinal-components-entity")) {
-            Elmendorf.registerTestClass(RipstopCcaTestSuite.class, "ripstop");
-        }
-    }
+    public void onInitialize() {}
 }

@@ -22,41 +22,39 @@
  */
 package org.ladysnake.ripstop;
 
-import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
+import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.s2c.play.BlockBreakingProgressS2CPacket;
 import net.minecraft.network.packet.s2c.play.ClearTitleS2CPacket;
-import net.minecraft.test.GameTest;
 import net.minecraft.test.GameTestException;
 import net.minecraft.test.TestContext;
 import net.minecraft.util.math.BlockPos;
-import org.ladysnake.elmendorf.GameTestUtil;
 import org.ladysnake.elmendorf.PacketSequenceChecker;
 
 import static org.ladysnake.elmendorf.ByteBufChecker.any;
 
-public class RipstopTestSuite implements FabricGameTest {
-    @GameTest(templateName = EMPTY_STRUCTURE)
+public class RipstopTestSuite {
+    @GameTest
     public void testPacketChecks(TestContext ctx) {
         var player = ctx.spawnServerPlayer(5, 5, 5);
         player.networkHandler.sendPacket(new ClearTitleS2CPacket(true));
         player.networkHandler.sendPacket(new ClearTitleS2CPacket(false));
         ctx.verifyConnection(player, conn -> conn.sent(ClearTitleS2CPacket.class).atLeast(2));
-        GameTestUtil.assertThrows(GameTestException.class,
+        ctx.assertThrows(GameTestException.class,
                 () -> ctx.verifyConnection(player, conn -> conn.sent(CustomPayload.id("ribbit"))));
         var buf = PacketByteBufs.create();
         buf.writeBlockPos(BlockPos.ORIGIN);
         buf.writeString("test");
         player.networkHandler.sendPacket(ServerPlayNetworking.createS2CPacket(new TestPayload(buf)));
         ctx.verifyConnection(player, conn -> conn.sent(TestPayload.ID, p -> conn.checkByteBuf(p.rawData(), c -> c.checkBlockPos(any()).checkString("test").noMoreData())));
-        GameTestUtil.assertThrows(GameTestException.class,
+        ctx.assertThrows(GameTestException.class,
                 () -> ctx.verifyConnection(player, conn -> conn.sent(TestPayload.ID, p -> conn.checkByteBuf(p.rawData(), c -> c.checkBoolean(false).noMoreData()))));
         ctx.complete();
     }
 
-    @GameTest(templateName = EMPTY_STRUCTURE)
+    @GameTest
     public void testPacketSequenceChecks(TestContext ctx) {
         var player = ctx.spawnServerPlayer(5, 5, 5);
         player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(1, BlockPos.ORIGIN, 3));

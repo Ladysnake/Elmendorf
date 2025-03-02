@@ -23,6 +23,8 @@
 package org.ladysnake.elmendorf;
 
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.test.GameTestException;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
@@ -37,5 +39,36 @@ public interface ElmendorfTestContext {
 
     default void verifyConnection(ServerPlayerEntity player, Consumer<CheckedConnection> verifier) {
 
+    }
+
+    GameTestException createError(String errorMessage);
+
+    default void assertTrue(String errorMessage, boolean b) {
+        if (!b) throw this.createError(errorMessage);
+    }
+
+    default void assertFalse(String errorMessage, boolean b) {
+        if (b) throw this.createError(errorMessage);
+    }
+
+    default void assertThrows(Class<? extends Throwable> expectedThrowable, ThrowingRunnable runnable) {
+        assertThrows(null, expectedThrowable, runnable);
+    }
+
+    default void assertThrows(@Nullable String errorMessage, Class<? extends Throwable> expectedThrowable, ThrowingRunnable runnable) {
+        try {
+            runnable.run();
+        } catch (Throwable t) {
+            if (expectedThrowable.isInstance(t)) {
+                return;
+            } else {
+                GameTestException err = createError((errorMessage == null ? "" : (errorMessage + " ==> ")) +
+                        String.format("Unexpected exception type thrown (expected %s but was %s)", expectedThrowable.getName(), t.getClass().getName()));
+                err.initCause(t);
+                throw err;
+            }
+        }
+        throw createError((errorMessage == null ? "" : (errorMessage + " ==> ")) +
+                String.format("Expected %s to be thrown, but nothing was thrown.", expectedThrowable.getName()));
     }
 }

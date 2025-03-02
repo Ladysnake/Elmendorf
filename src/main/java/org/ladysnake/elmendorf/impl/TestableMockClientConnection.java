@@ -24,16 +24,21 @@ package org.ladysnake.elmendorf.impl;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.network.NetworkSide;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.PacketCallbacks;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
 import net.minecraft.test.GameTestException;
+import net.minecraft.test.TestContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.internal.entity.CardinalComponentsEntity;
-import org.ladysnake.elmendorf.*;
+import org.ladysnake.elmendorf.ByteBufChecker;
+import org.ladysnake.elmendorf.CheckedConnection;
+import org.ladysnake.elmendorf.ConnectionTestConfiguration;
+import org.ladysnake.elmendorf.PacketSequenceChecker;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -42,12 +47,14 @@ import java.util.stream.Collectors;
 
 public final class TestableMockClientConnection extends MockClientConnection implements CheckedConnection, ConnectionTestConfiguration {
     private final List<SentPacket> packetQueue = new ArrayList<>();
+    private final TestContext ctx;
     private boolean allowNoPacketMatch;
     private boolean flushEachTick;
     private int ticks;
 
-    public TestableMockClientConnection(NetworkSide side) {
+    public TestableMockClientConnection(NetworkSide side, TestContext ctx) {
         super(side);
+        this.ctx = ctx;
     }
 
     @Override
@@ -102,6 +109,11 @@ public final class TestableMockClientConnection extends MockClientConnection imp
         }
     }
 
+    @Override
+    public void checkByteBuf(PacketByteBuf buf, Consumer<ByteBufChecker> expect) {
+        expect.accept(new ByteBufChecker(buf, ctx));
+    }
+
     @NotNull
     private static <T extends CustomPayload> Predicate<Packet<?>> createCheckerTest(CustomPayload.Id<T> channelId, Consumer<T> expect, List<GameTestException> suppressed) {
         return packet -> {
@@ -123,7 +135,7 @@ public final class TestableMockClientConnection extends MockClientConnection imp
     @Override
     public PacketSequenceChecker sent(Predicate<Packet<?>> test, String errorMessage) {
         var packets = this.packetQueue.stream().filter(p -> test.test(p.packet)).toList();
-        if (!this.allowNoPacketMatch) GameTestUtil.assertFalse(errorMessage, packets.isEmpty());
+        if (!this.allowNoPacketMatch) ctx.assertFalse(errorMessage, packets.isEmpty());
         return new PacketSequenceCheckerImpl(errorMessage, packets);
     }
 
@@ -131,13 +143,13 @@ public final class TestableMockClientConnection extends MockClientConnection imp
     @SuppressWarnings("UnstableApiUsage")
     @Override
     public PacketSequenceChecker sentEntityComponentUpdate(@Nullable Entity synced, ComponentKey<?> key, Consumer<ByteBufChecker> expect) {
-        if (synced != null) GameTestUtil.assertTrue("Expected " + synced + " to provide component " + key.getId(), key.isProvidedBy(synced));
+        if (synced != null) ctx.assertTrue("Expected " + synced + " to provide component " + key.getId(), key.isProvidedBy(synced));
         List<GameTestException> suppressed = new ArrayList<>();
         try {
             return sent(
                     createCheckerTest(CardinalComponentsEntity.PACKET_ID, payload -> {
-                        GameTestUtil.assertTrue("Expected component update to target entity " + synced, synced == null || payload.targetData() == synced.getId());
-                        expect.accept(new ByteBufChecker(payload.buf()));
+                        ctx.assertTrue("Expected component update to target entity " + synced, synced == null || payload.targetData() == synced.getId());
+                        expect.accept(new ByteBufChecker(payload.buf(), ctx));
                     }, suppressed),
                     "Expected sync packet for component " + key.getId()
             );
@@ -152,29 +164,36 @@ public final class TestableMockClientConnection extends MockClientConnection imp
         test.accept(this.packetQueue.stream().map(p -> p.packet).collect(Collectors.toCollection(ArrayDeque::new)));
     }
 
-    public record PacketSequenceCheckerImpl(String defaultErrorMessage, List<SentPacket> packets) implements PacketSequenceChecker {
+    public class PacketSequenceCheckerImpl implements PacketSequenceChecker {
+        private final String defaultErrorMessage;
+        private final List<SentPacket> packets;
+
+        public PacketSequenceCheckerImpl(String defaultErrorMessage, List<SentPacket> packets) {
+            this.defaultErrorMessage = defaultErrorMessage;
+            this.packets = packets;
+        }
 
         @Override
         public PacketSequenceChecker atLeast(int times) {
-            GameTestUtil.assertTrue("%s to be sent at least %d times, was %d".formatted(defaultErrorMessage, times, this.packets.size()), this.packets.size() >= times);
+            ctx.assertTrue("%s to be sent at least %d times, was %d".formatted(defaultErrorMessage, times, this.packets.size()), this.packets.size() >= times);
             return this;
         }
 
         @Override
         public PacketSequenceChecker atLeast(String errorMessage, int times) {
-            GameTestUtil.assertTrue(errorMessage, this.packets.size() >= times);
+            ctx.assertTrue(errorMessage, this.packets.size() >= times);
             return this;
         }
 
         @Override
         public PacketSequenceChecker exactly(int times) {
-            GameTestUtil.assertTrue("%s to be sent %d times, was %d".formatted(defaultErrorMessage, times, this.packets.size()), this.packets.size() == times);
+            ctx.assertTrue("%s to be sent %d times, was %d".formatted(defaultErrorMessage, times, this.packets.size()), this.packets.size() == times);
             return this;
         }
 
         @Override
         public PacketSequenceChecker exactly(String errorMessage, int times) {
-            GameTestUtil.assertTrue(errorMessage, this.packets.size() == times);
+            ctx.assertTrue(errorMessage, this.packets.size() == times);
             return this;
         }
 
@@ -209,14 +228,14 @@ public final class TestableMockClientConnection extends MockClientConnection imp
         @SuppressWarnings("UnstableApiUsage")
         @Override
         public PacketSequenceChecker thenSentComponentUpdate(Delay delay, @Nullable Entity synced, ComponentKey<?> key, Consumer<ByteBufChecker> expect) {
-            if (synced != null) GameTestUtil.assertTrue("Expected " + synced + " to provide component " + key.getId(), key.isProvidedBy(synced));
+            if (synced != null) ctx.assertTrue("Expected " + synced + " to provide component " + key.getId(), key.isProvidedBy(synced));
             List<GameTestException> suppressed = new ArrayList<>();
             try {
                 return thenSent(
                         delay,
                         createCheckerTest(CardinalComponentsEntity.PACKET_ID, payload -> {
-                            GameTestUtil.assertTrue("Expected component update to target entity " + synced, synced == null || payload.targetData() == synced.getId());
-                            expect.accept(new ByteBufChecker(payload.buf()));
+                            ctx.assertTrue("Expected component update to target entity " + synced, synced == null || payload.targetData() == synced.getId());
+                            expect.accept(new ByteBufChecker(payload.buf(), ctx));
                         }, suppressed),
                         "Expected sync packet for component " + key.getId()
                 );
@@ -228,8 +247,8 @@ public final class TestableMockClientConnection extends MockClientConnection imp
 
         @Override
         public PacketSequenceChecker thenSent(Delay delay, Predicate<Packet<?>> test, String errorMessage) {
-            var packets = this.packets().stream().map(p -> p.next(delay, test)).filter(Objects::nonNull).toList();
-            GameTestUtil.assertFalse(errorMessage, packets.isEmpty());
+            var packets = this.packets.stream().map(p -> p.next(delay, test)).filter(Objects::nonNull).toList();
+            ctx.assertFalse(errorMessage, packets.isEmpty());
             return new PacketSequenceCheckerImpl(errorMessage, packets);
         }
     }

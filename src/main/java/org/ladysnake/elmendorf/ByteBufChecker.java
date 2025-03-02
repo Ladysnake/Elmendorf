@@ -24,7 +24,8 @@ package org.ladysnake.elmendorf;
 
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.test.GameTestException;
+import net.minecraft.test.TestContext;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -36,9 +37,11 @@ import java.util.function.Function;
 
 public final class ByteBufChecker {
     private final PacketByteBuf buf;
+    private final TestContext ctx;
 
-    public ByteBufChecker(PacketByteBuf buf) {
+    public ByteBufChecker(PacketByteBuf buf, TestContext ctx) {
         this.buf = PacketByteBufs.copy(buf);
+        this.ctx = ctx;
     }
 
     public ByteBufChecker checkIdentifier(@Nullable Identifier expected) {
@@ -95,7 +98,7 @@ public final class ByteBufChecker {
 
     public void noMoreData() {
         if (this.buf.isReadable()) {
-            throw new GameTestException("Expected end of buffer");
+            throw ctx.createError(Text.literal("Expected end of buffer"));
         }
     }
 
@@ -104,9 +107,9 @@ public final class ByteBufChecker {
         try {
             value = reader.apply(this.buf);
         } catch (IndexOutOfBoundsException e) {
-            throw new GameTestException("Expected %s %s but there was nothing left to read".formatted(type.getSimpleName(), str(expected)));
+            throw ctx.createError(Text.literal("Expected %s %s but there was nothing left to read".formatted(type.getSimpleName(), str(expected))));
         }
-        GameTestUtil.assertTrue("Expected %s %s, got %s".formatted(type.getSimpleName(), str(expected), value), expected == any() || expected.equals(value));
+        ctx.assertTrue("Expected %s %s, got %s".formatted(type.getSimpleName(), str(expected), value), expected == any() || expected.equals(value));
         return this;
     }
 
