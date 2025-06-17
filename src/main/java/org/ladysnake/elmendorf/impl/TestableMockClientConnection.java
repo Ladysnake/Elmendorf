@@ -22,10 +22,10 @@
  */
 package org.ladysnake.elmendorf.impl;
 
+import io.netty.channel.ChannelFutureListener;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.PacketCallbacks;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
@@ -58,7 +58,7 @@ public final class TestableMockClientConnection extends MockClientConnection imp
     }
 
     @Override
-    public void send(Packet<?> packet, @Nullable PacketCallbacks callback, boolean flush) {
+    public void send(Packet<?> packet, @Nullable ChannelFutureListener callback, boolean flush) {
         this.packetQueue.add(new TestableMockClientConnection.SentPacket(packet, this.ticks));
         super.send(packet, callback, flush);
     }
