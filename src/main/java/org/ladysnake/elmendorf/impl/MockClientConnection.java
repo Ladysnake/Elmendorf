@@ -5,31 +5,31 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
-import net.minecraft.network.ClientConnection;
-import net.minecraft.network.DisconnectionInfo;
-import net.minecraft.network.NetworkSide;
-import net.minecraft.network.listener.PacketListener;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.state.NetworkState;
+import net.minecraft.network.Connection;
+import net.minecraft.network.DisconnectionDetails;
+import net.minecraft.network.PacketListener;
+import net.minecraft.network.ProtocolInfo;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketFlow;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.ladysnake.elmendorf.impl.mixin.ClientConnectionAccessor;
+import org.ladysnake.elmendorf.impl.mixin.ConnectionAccessor;
 
 import java.util.concurrent.TimeUnit;
 
-public class MockClientConnection extends ClientConnection {
-    public MockClientConnection(NetworkSide side) {
+public class MockClientConnection extends Connection {
+    public MockClientConnection(PacketFlow side) {
         super(side);
     }
 
     @Override
-    public void setInitialPacketListener(PacketListener packetListener) {
+    public void setListenerForServerboundHandshake(PacketListener packetListener) {
         // NO-OP
     }
 
     @Override
-    public boolean isOpen() {
-        return true;
+    public boolean isConnected() {
+        return super.isConnected();
     }
 
     @Override
@@ -159,23 +159,23 @@ public class MockClientConnection extends ClientConnection {
     }
 
     @Override
-    public void flush() {
+    public void flushChannel() {
         // NO-OP
     }
 
     @Override
-    public void tryDisableAutoRead() {
+    public void setReadOnly() {
         // NO-OP
     }
 
     @Override
-    public void disconnect(DisconnectionInfo disconnectReason) {
+    public void disconnect(DisconnectionDetails disconnectReason) {
         //noinspection ConstantConditions
-        ((ClientConnectionAccessor) this).setDisconnectionInfo(disconnectReason);
+        ((ConnectionAccessor) this).setDisconnectionDetails(disconnectReason);
     }
 
     @Override
-    public <T extends PacketListener> void transitionInbound(NetworkState<T> state, T packetListener) {
+    public <T extends PacketListener> void setupInboundProtocol(ProtocolInfo<T> state, T packetListener) {
         // NO-OP
     }
 }

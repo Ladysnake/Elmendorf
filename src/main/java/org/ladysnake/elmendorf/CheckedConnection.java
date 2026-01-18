@@ -22,12 +22,9 @@
  */
 package org.ladysnake.elmendorf;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.network.packet.Packet;
-import org.jetbrains.annotations.Nullable;
-import org.ladysnake.cca.api.v3.component.ComponentKey;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
 import java.util.Queue;
 import java.util.function.Consumer;
@@ -49,23 +46,13 @@ public interface CheckedConnection {
 
     <P extends Packet<?>> PacketSequenceChecker sent(Class<P> packetType, Predicate<P> expect);
 
-    PacketSequenceChecker sent(CustomPayload.Id<?> channelId);
+    PacketSequenceChecker sent(CustomPacketPayload.Type<?> channelId);
 
-    <T extends CustomPayload> PacketSequenceChecker sent(CustomPayload.Id<T> channelId, Consumer<T> expect);
+    <T extends CustomPacketPayload> PacketSequenceChecker sent(CustomPacketPayload.Type<T> channelId, Consumer<T> expect);
 
-    void checkByteBuf(PacketByteBuf buf, Consumer<ByteBufChecker> expect);
+    void checkByteBuf(FriendlyByteBuf buf, Consumer<ByteBufChecker> expect);
 
     PacketSequenceChecker sent(Predicate<Packet<?>> test, String errorMessage);
-
-    /**
-     * Checks that this connection object got a Cardinal Components API sync packet sent through it
-     *
-     * @param synced the entity on which the component update occurred
-     * @param key    the key object representing the type of component that got synced
-     * @param expect assertions for the content of the buffer
-     * @return       a {@link PacketSequenceChecker} to perform advanced checks on matching packets
-     */
-    PacketSequenceChecker sentEntityComponentUpdate(@Nullable Entity synced, ComponentKey<?> key, Consumer<ByteBufChecker> expect);
 
     void sentPackets(Consumer<Queue<Packet<?>>> test);
 

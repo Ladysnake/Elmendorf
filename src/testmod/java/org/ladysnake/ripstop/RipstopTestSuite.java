@@ -23,54 +23,57 @@
 package org.ladysnake.ripstop;
 
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.FriendlyByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.network.packet.s2c.play.BlockBreakingProgressS2CPacket;
-import net.minecraft.network.packet.s2c.play.ClearTitleS2CPacket;
-import net.minecraft.test.GameTestException;
-import net.minecraft.test.TestContext;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.gametest.framework.GameTestAssertException;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.protocol.game.ClientboundBlockDestructionPacket;
+import net.minecraft.network.protocol.game.ClientboundClearTitlesPacket;
+import org.ladysnake.elmendorf.ElmendorfTestContext;
 import org.ladysnake.elmendorf.PacketSequenceChecker;
 
 import static org.ladysnake.elmendorf.ByteBufChecker.any;
 
 public class RipstopTestSuite {
     @GameTest
-    public void testPacketChecks(TestContext ctx) {
+    public void testPacketChecks(GameTestHelper helper) {
+        ElmendorfTestContext ctx = ((ElmendorfTestContext) helper);
         var player = ctx.spawnServerPlayer(5, 5, 5);
-        player.networkHandler.sendPacket(new ClearTitleS2CPacket(true));
-        player.networkHandler.sendPacket(new ClearTitleS2CPacket(false));
-        ctx.verifyConnection(player, conn -> conn.sent(ClearTitleS2CPacket.class).atLeast(2));
-        ctx.assertThrows(GameTestException.class,
-                () -> ctx.verifyConnection(player, conn -> conn.sent(CustomPayload.id("ribbit"))));
-        var buf = PacketByteBufs.create();
-        buf.writeBlockPos(BlockPos.ORIGIN);
-        buf.writeString("test");
-        player.networkHandler.sendPacket(ServerPlayNetworking.createS2CPacket(new TestPayload(buf)));
-        ctx.verifyConnection(player, conn -> conn.sent(TestPayload.ID, p -> conn.checkByteBuf(p.rawData(), c -> c.checkBlockPos(any()).checkString("test").noMoreData())));
-        ctx.assertThrows(GameTestException.class,
+        player.connection.send(new ClientboundClearTitlesPacket(true));
+        player.connection.send(new ClientboundClearTitlesPacket(false));
+        ctx.verifyConnection(player, conn -> conn.sent(ClientboundClearTitlesPacket.class).atLeast(2));
+        ctx.assertThrows(GameTestAssertException.class,
+                () -> ctx.verifyConnection(player, conn -> conn.sent(CustomPacketPayload.createType("ribbit"))));
+        var buf = FriendlyByteBufs.create();
+        buf.writeBlockPos(BlockPos.ZERO);
+        buf.writeUtf("test");
+        player.connection.send(ServerPlayNetworking.createClientboundPacket(new TestPayload(buf)));
+        ctx.verifyConnection(player, conn -> conn.sent(TestPayload.ID, p -> conn.checkByteBuf(p.rawData(), c -> c.checkBlockPos(any()).checkUtf("test").noMoreData())));
+        ctx.assertThrows(GameTestAssertException.class,
                 () -> ctx.verifyConnection(player, conn -> conn.sent(TestPayload.ID, p -> conn.checkByteBuf(p.rawData(), c -> c.checkBoolean(false).noMoreData()))));
-        ctx.complete();
+        ((GameTestHelper) ctx).succeed();
     }
 
     @GameTest
-    public void testPacketSequenceChecks(TestContext ctx) {
+    public void testPacketSequenceChecks(GameTestHelper helper) {
+        ElmendorfTestContext ctx = ((ElmendorfTestContext) helper);
         var player = ctx.spawnServerPlayer(5, 5, 5);
-        player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(1, BlockPos.ORIGIN, 3));
-        player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(1, BlockPos.ORIGIN, 4));
-        player.networkHandler.sendPacket(new BlockBreakingProgressS2CPacket(1, BlockPos.ORIGIN, 5));
-        var buf1 = PacketByteBufs.create();
+        player.connection.send(new ClientboundBlockDestructionPacket(1, BlockPos.ZERO, 3));
+        player.connection.send(new ClientboundBlockDestructionPacket(1, BlockPos.ZERO, 4));
+        player.connection.send(new ClientboundBlockDestructionPacket(1, BlockPos.ZERO, 5));
+        var buf1 = FriendlyByteBufs.create();
         buf1.writeBoolean(true);
-        player.networkHandler.sendPacket(ServerPlayNetworking.createS2CPacket(new TestPayload(buf1)));
+        player.connection.send(ServerPlayNetworking.createClientboundPacket(new TestPayload(buf1)));
         ctx.verifyConnection(player, conn ->
-                conn.sent(BlockBreakingProgressS2CPacket.class, packet -> packet.getEntityId() == 1)
+                conn.sent(ClientboundBlockDestructionPacket.class, packet -> packet.getId() == 1)
                 // 3 matching packets
-                .thenSent(PacketSequenceChecker.Delay.IMMEDIATELY, BlockBreakingProgressS2CPacket.class)
+                .thenSent(PacketSequenceChecker.Delay.IMMEDIATELY, ClientboundBlockDestructionPacket.class)
                 // 2 matching packets: the last BlockBreaking packet is logically not followed by another one
                 .thenSent(PacketSequenceChecker.Delay.SAME_TICK, TestPayload.ID, p -> conn.checkByteBuf(p.rawData(), c -> c.checkBoolean(true).noMoreData()))
                 // still 2 matching packets: all BlockBreaking packets are followed by the custom packet in the same tick
                 .exactly(2));
-        ctx.complete();
+        ((GameTestHelper) ctx).succeed();
     }
 }

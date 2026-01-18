@@ -22,8 +22,8 @@
  */
 package org.ladysnake.elmendorf.impl.mixin.flakyfix;
 
-import net.minecraft.test.GameTestState;
-import net.minecraft.test.TestSet;
+import net.minecraft.gametest.framework.GameTestInfo;
+import net.minecraft.gametest.framework.MultipleTestTracker;
 import org.ladysnake.elmendorf.impl.FixedGameTestState;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -35,13 +35,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.Collection;
 import java.util.List;
 
-@Mixin(TestSet.class)
-public abstract class TestSetMixin {
-    @Shadow @Final private Collection<GameTestState> tests;
+@Mixin(MultipleTestTracker.class)
+public abstract class MultipleTestTrackerMixin {
+    @Shadow @Final private Collection<GameTestInfo> tests;
 
     @Inject(method = "isDone", at = @At("HEAD"))
     private void replaceTestStates(CallbackInfoReturnable<Boolean> cir) {
-        for (var it = ((List<GameTestState>)this.tests).listIterator(); it.hasNext(); ) {
+        for (var it = ((List<GameTestInfo>)this.tests).listIterator(); it.hasNext(); ) {
             var test = it.next();
             var replacement = ((FixedGameTestState) test).cs$getReplacementGameTest();
 

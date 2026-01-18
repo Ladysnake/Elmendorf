@@ -22,14 +22,14 @@
  */
 package org.ladysnake.ripstop;
 
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
-public record TestPayload(PacketByteBuf rawData) implements CustomPayload {
-    public static final CustomPayload.Id<TestPayload> ID = new CustomPayload.Id<>(Ripstop.id("test"));
+public record TestPayload(FriendlyByteBuf rawData) implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<TestPayload> ID = new CustomPacketPayload.Type<>(Ripstop.id("test"));
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return ID;
     }
 }

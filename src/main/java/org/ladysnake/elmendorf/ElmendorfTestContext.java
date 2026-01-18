@@ -22,33 +22,33 @@
  */
 package org.ladysnake.elmendorf;
 
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.test.GameTestException;
+import net.minecraft.gametest.framework.GameTestAssertException;
+import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
 public interface ElmendorfTestContext {
-    default ServerPlayerEntity spawnServerPlayer(double x, double y, double z) {
+    default ServerPlayer spawnServerPlayer(double x, double y, double z) {
         throw new UnsupportedOperationException();
     }
 
-    default void configureConnection(ServerPlayerEntity player, Consumer<ConnectionTestConfiguration> configurator) {
+    default void configureConnection(ServerPlayer player, Consumer<ConnectionTestConfiguration> configurator) {
 
     }
 
-    default void verifyConnection(ServerPlayerEntity player, Consumer<CheckedConnection> verifier) {
+    default void verifyConnection(ServerPlayer player, Consumer<CheckedConnection> verifier) {
 
     }
 
-    GameTestException createError(String errorMessage);
+    GameTestAssertException assertionException(String errorMessage);
 
     default void assertTrue(String errorMessage, boolean b) {
-        if (!b) throw this.createError(errorMessage);
+        if (!b) throw this.assertionException(errorMessage);
     }
 
     default void assertFalse(String errorMessage, boolean b) {
-        if (b) throw this.createError(errorMessage);
+        if (b) throw this.assertionException(errorMessage);
     }
 
     default void assertThrows(Class<? extends Throwable> expectedThrowable, ThrowingRunnable runnable) {
@@ -62,13 +62,13 @@ public interface ElmendorfTestContext {
             if (expectedThrowable.isInstance(t)) {
                 return;
             } else {
-                GameTestException err = createError((errorMessage == null ? "" : (errorMessage + " ==> ")) +
+                GameTestAssertException err = assertionException((errorMessage == null ? "" : (errorMessage + " ==> ")) +
                         String.format("Unexpected exception type thrown (expected %s but was %s)", expectedThrowable.getName(), t.getClass().getName()));
                 err.initCause(t);
                 throw err;
             }
         }
-        throw createError((errorMessage == null ? "" : (errorMessage + " ==> ")) +
+        throw assertionException((errorMessage == null ? "" : (errorMessage + " ==> ")) +
                 String.format("Expected %s to be thrown, but nothing was thrown.", expectedThrowable.getName()));
     }
 }

@@ -22,22 +22,22 @@
  */
 package org.ladysnake.elmendorf.impl.mixin.flakyfix;
 
-import net.minecraft.test.GameTestState;
+import net.minecraft.gametest.framework.GameTestInfo;
 import org.ladysnake.elmendorf.impl.FixedGameTestState;
 import org.spongepowered.asm.mixin.Mixin;
 
-@Mixin(GameTestState.class)
-public abstract class GameTestStateMixin implements FixedGameTestState {
+@Mixin(GameTestInfo.class)
+public abstract class GameTestInfoMixin implements FixedGameTestState {
     // Keep track of replacement states, for tests that are run multiple times
-    private GameTestState cs$fallbackGameTest;
+    private GameTestInfo cs$fallbackGameTest;
 
     @Override
-    public void cs$setReplacementGameTest(GameTestState state) {
+    public void cs$setReplacementGameTest(GameTestInfo state) {
         this.cs$fallbackGameTest = state;
     }
 
     @Override
-    public GameTestState cs$getReplacementGameTest() {
-        return this.cs$fallbackGameTest == null ? (GameTestState) (Object) this : ((FixedGameTestState) this.cs$fallbackGameTest).cs$getReplacementGameTest();
+    public GameTestInfo cs$getReplacementGameTest() {
+        return this.cs$fallbackGameTest == null ? (GameTestInfo) (Object) this : ((FixedGameTestState) this.cs$fallbackGameTest).cs$getReplacementGameTest();
     }
 }

@@ -22,9 +22,9 @@
  */
 package org.ladysnake.elmendorf.impl;
 
-import net.minecraft.test.GameTestState;
+import net.minecraft.gametest.framework.GameTestInfo;
 
 public interface FixedGameTestState {
-    void cs$setReplacementGameTest(GameTestState state);
-    GameTestState cs$getReplacementGameTest();
+    void cs$setReplacementGameTest(GameTestInfo state);
+    GameTestInfo cs$getReplacementGameTest();
 }

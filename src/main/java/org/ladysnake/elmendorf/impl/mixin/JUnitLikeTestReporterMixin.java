@@ -22,13 +22,32 @@
  */
 package org.ladysnake.elmendorf.impl.mixin;
 
-import net.minecraft.network.ClientConnection;
-import net.minecraft.network.DisconnectionInfo;
+import net.minecraft.gametest.framework.GameTestAssertException;
+import net.minecraft.gametest.framework.GameTestInfo;
+import net.minecraft.gametest.framework.JUnitLikeTestReporter;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.w3c.dom.Element;
 
-@Mixin(ClientConnection.class)
-public interface ClientConnectionAccessor {
-    @Accessor
-    void setDisconnectionInfo(DisconnectionInfo reason);
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+
+@Mixin(JUnitLikeTestReporter.class)
+public abstract class JUnitLikeTestReporterMixin {
+    @ModifyVariable(method = "onTestFailed", at = @At(value = "INVOKE", target = "Lorg/w3c/dom/Element;setAttribute(Ljava/lang/String;Ljava/lang/String;)V", shift = At.Shift.AFTER))
+    private Element logErrorStacktrace(Element el, GameTestInfo test) {
+        // If not a basic assertion, show the stacktrace too
+        Throwable t = test.getError();
+        if (t != null && !(t instanceof GameTestAssertException)) {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            PrintWriter w = new PrintWriter(out);
+            t.printStackTrace(w);
+            w.flush();
+            el.setTextContent(out.toString(StandardCharsets.UTF_8));
+        }
+
+        return el;
+    }
 }

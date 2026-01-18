@@ -23,12 +23,12 @@
 package org.ladysnake.ripstop;
 
 import net.fabricmc.api.ModInitializer;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 
 public class Ripstop implements ModInitializer {
     public static final String MOD_ID = "ripstop";
     public static Identifier id(String path) {
-        return Identifier.of(MOD_ID, path);
+        return Identifier.fromNamespaceAndPath(MOD_ID, path);
     }
     @Override
     public void onInitialize() {}

@@ -1,6 +1,6 @@
 plugins {
-	id("fabric-loom") version "1.10-SNAPSHOT"
-	id("io.github.ladysnake.chenille") version "0.14.0"
+	id("net.fabricmc.fabric-loom") version "1.14-SNAPSHOT"
+	id("io.github.ladysnake.chenille") version "0.18.0-SNAPSHOT"
 }
 
 version = providers.gradleProperty("mod_version").get()
@@ -12,7 +12,7 @@ chenille {
 		withGithubRelease()
 	}
 	configureTestmod {
-		withDependencyConfiguration()
+//		withDependencyConfiguration()
 	}
 
 	javaVersion = providers.gradleProperty("java_version").get().toInt()
@@ -32,21 +32,19 @@ repositories {
 
 dependencies {
 	val minecraftVersion: String = providers.gradleProperty("minecraft_version").get()
-	val yarnVersion: String = providers.gradleProperty("yarn_mappings").get()
 	val loaderVersion: String = providers.gradleProperty("loader_version").get()
 	val fabricApiVersion: String = providers.gradleProperty("fabric_version").get()
 	val ccaVersion: String = providers.gradleProperty("cca_version").get()
 
 	// To change the versions see the gradle.properties file
 	minecraft("com.mojang:minecraft:${minecraftVersion}")
-	mappings("net.fabricmc:yarn:${yarnVersion}:v2")
-	modImplementation("net.fabricmc:fabric-loader:${loaderVersion}")
+	implementation("net.fabricmc:fabric-loader:${loaderVersion}")
 
-	modApi(fabricApi.module("fabric-gametest-api-v1", fabricApiVersion))
-	modImplementation(fabricApi.module("fabric-registry-sync-v0", fabricApiVersion))
-	modLocalImplementation(fabricApi.module("fabric-networking-api-v1", fabricApiVersion))
-	modCompileOnly("org.ladysnake.cardinal-components-api:cardinal-components-base:${ccaVersion}")
-	modCompileOnly("org.ladysnake.cardinal-components-api:cardinal-components-entity:${ccaVersion}")
+	api(fabricApi.module("fabric-gametest-api-v1", fabricApiVersion))
+	implementation(fabricApi.module("fabric-registry-sync-v0", fabricApiVersion))
+	localImplementation(fabricApi.module("fabric-networking-api-v1", fabricApiVersion))
+//	compileOnly("org.ladysnake.cardinal-components-api:cardinal-components-base:${ccaVersion}")
+//	compileOnly("org.ladysnake.cardinal-components-api:cardinal-components-entity:${ccaVersion}")
 	"testmodImplementation"(sourceSets.main.get().output)
 	annotationProcessor(dummy.output)
 }

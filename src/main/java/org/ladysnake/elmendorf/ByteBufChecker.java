@@ -22,94 +22,89 @@
  */
 package org.ladysnake.elmendorf;
 
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.test.TestContext;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.ChunkSectionPos;
+import net.fabricmc.fabric.api.networking.v1.FriendlyByteBufs;
+import net.minecraft.core.BlockPos;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.ChunkPos;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Function;
 
 public final class ByteBufChecker {
-    private final PacketByteBuf buf;
-    private final TestContext ctx;
+    private final FriendlyByteBuf buf;
+    private final GameTestHelper ctx;
 
-    public ByteBufChecker(PacketByteBuf buf, TestContext ctx) {
-        this.buf = PacketByteBufs.copy(buf);
+    public ByteBufChecker(FriendlyByteBuf buf, GameTestHelper ctx) {
+        this.buf = FriendlyByteBufs.copy(buf);
         this.ctx = ctx;
     }
 
     public ByteBufChecker checkIdentifier(@Nullable Identifier expected) {
-        return check(Identifier.class, expected, PacketByteBuf::readIdentifier);
+        return check(Identifier.class, expected, FriendlyByteBuf::readIdentifier);
     }
 
     public ByteBufChecker checkBlockPos(@Nullable BlockPos expected) {
-        return check(BlockPos.class, expected, buf -> PacketByteBuf.readBlockPos(buf));
+        return check(BlockPos.class, expected, buf -> FriendlyByteBuf.readBlockPos(buf));
     }
 
     public ByteBufChecker checkChunkPos(@Nullable ChunkPos expected) {
         return check(ChunkPos.class, expected, b -> b.readChunkPos());
     }
 
-    public ByteBufChecker checkChunkSectionPos(@Nullable ChunkSectionPos expected) {
-        return check(ChunkSectionPos.class, expected, PacketByteBuf::readChunkSectionPos);
-    }
-
     public ByteBufChecker checkBoolean(@Nullable Boolean expected) {
-        return check(boolean.class, expected, PacketByteBuf::readBoolean);
+        return check(boolean.class, expected, FriendlyByteBuf::readBoolean);
     }
 
     public ByteBufChecker checkByte(@Nullable Byte expected) {
-        return check(byte.class, expected, PacketByteBuf::readByte);
+        return check(byte.class, expected, FriendlyByteBuf::readByte);
     }
 
     public ByteBufChecker checkShort(@Nullable Short expected) {
-        return check(short.class, expected, PacketByteBuf::readShort);
+        return check(short.class, expected, FriendlyByteBuf::readShort);
     }
 
     public ByteBufChecker checkInt(@Nullable Integer expected) {
-        return check(int.class, expected, PacketByteBuf::readInt);
+        return check(int.class, expected, FriendlyByteBuf::readInt);
     }
 
     public ByteBufChecker checkVarInt(@Nullable Integer expected) {
-        return check(int.class, expected, PacketByteBuf::readVarInt);
+        return check(int.class, expected, FriendlyByteBuf::readVarInt);
     }
 
     public ByteBufChecker checkLong(@Nullable Long expected) {
-        return check(long.class, expected, PacketByteBuf::readLong);
+        return check(long.class, expected, FriendlyByteBuf::readLong);
     }
 
     public ByteBufChecker checkFloat(@Nullable Float expected) {
-        return check(float.class, expected, PacketByteBuf::readFloat);
+        return check(float.class, expected, FriendlyByteBuf::readFloat);
     }
 
     public ByteBufChecker checkDouble(@Nullable Double expected) {
-        return check(double.class, expected, PacketByteBuf::readDouble);
+        return check(double.class, expected, FriendlyByteBuf::readDouble);
     }
 
-    public ByteBufChecker checkString(@Nullable String expected) {
-        return check(String.class, expected, PacketByteBuf::readString);
+    public ByteBufChecker checkUtf(@Nullable String expected) {
+        return check(String.class, expected, FriendlyByteBuf::readUtf);
     }
 
     public void noMoreData() {
         if (this.buf.isReadable()) {
-            throw ctx.createError(Text.literal("Expected end of buffer"));
+            throw ctx.assertionException(Component.literal("Expected end of buffer"));
         }
     }
 
-    public <T> ByteBufChecker check(Class<T> type, @Nullable T expected, Function<PacketByteBuf, T> reader) {
+    public <T> ByteBufChecker check(Class<T> type, @Nullable T expected, Function<FriendlyByteBuf, T> reader) {
         T value;
         try {
             value = reader.apply(this.buf);
         } catch (IndexOutOfBoundsException e) {
-            throw ctx.createError(Text.literal("Expected %s %s but there was nothing left to read".formatted(type.getSimpleName(), str(expected))));
+            throw ctx.assertionException(Component.literal("Expected %s %s but there was nothing left to read".formatted(type.getSimpleName(), str(expected))));
         }
-        ctx.assertTrue("Expected %s %s, got %s".formatted(type.getSimpleName(), str(expected), value), expected == any() || expected.equals(value));
+        ctx.assertTrue(expected == any() || expected.equals(value), "Expected %s %s, got %s".formatted(type.getSimpleName(), str(expected), value));
         return this;
     }
 
