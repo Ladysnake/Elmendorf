@@ -26,9 +26,14 @@
 
   "depends": {
     "fabricloader": ">=0.11.3",
-    "minecraft": ">=1.19-",
-    "java": ">=17"
+    "minecraft": ">=26.1-",
+    "java": ">=21"
   },
   "custom": {
+    "loom:injected_interfaces": {
+      "net/minecraft/gametest/framework/GameTestHelper": [
+        "org/ladysnake/elmendorf/ElmendorfTestContext"
+      ]
+    }
   }
 }

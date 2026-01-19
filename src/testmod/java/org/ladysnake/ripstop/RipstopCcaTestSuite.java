@@ -22,15 +22,21 @@
  */
 package org.ladysnake.ripstop;
 
+import net.fabricmc.fabric.api.gametest.v1.GameTest;
+import net.minecraft.gametest.framework.GameTestAssertException;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.entity.EntityType;
+import org.ladysnake.elmendorf.ByteBufChecker;
+
 public class RipstopCcaTestSuite {
-//    @GameTest
-//    public void testComponentSyncChecks(ElmendorfTestContext ctx) {
-//        var player = ctx.spawnServerPlayer(5, 0, 5);
-//        var key = RipstopComponents.TEST;
-//        var entity = ctx.spawnEntity(EntityType.AXOLOTL, 1, 0, 1);
-//        key.sync(entity);
-//        ctx.assertThrows("Expected " + player + " to provide component ripstop:test-component", GameTestAssertException.class, () -> ctx.verifyConnection(player, conn -> conn.sentEntityComponentUpdate(player, key, ByteBufChecker::noMoreData)));
-//        ctx.verifyConnection(player, conn -> conn.sentEntityComponentUpdate(entity, key, ByteBufChecker::noMoreData));
-//        ctx.complete();
-//    }
+    @GameTest
+    public void testComponentSyncChecks(GameTestHelper ctx) {
+        var player = ctx.spawnServerPlayer(5, 0, 5);
+        var key = RipstopComponents.TEST;
+        var entity = ctx.spawn(EntityType.AXOLOTL, 1, 0, 1);
+        key.sync(entity);
+        ctx.assertThrows("Expected " + player + " to provide component ripstop:test-component", GameTestAssertException.class, () -> ctx.verifyConnection(player, conn -> conn.sentEntityComponentUpdate(player, key, ByteBufChecker::noMoreData)));
+        ctx.verifyConnection(player, conn -> conn.sentEntityComponentUpdate(entity, key, ByteBufChecker::noMoreData));
+        ctx.succeed();
+    }
 }

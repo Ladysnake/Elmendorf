@@ -25,6 +25,9 @@ package org.ladysnake.elmendorf;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.world.entity.Entity;
+import org.jetbrains.annotations.Nullable;
+import org.ladysnake.cca.api.v3.component.ComponentKey;
 
 import java.util.Queue;
 import java.util.function.Consumer;
@@ -53,6 +56,16 @@ public interface CheckedConnection {
     void checkByteBuf(FriendlyByteBuf buf, Consumer<ByteBufChecker> expect);
 
     PacketSequenceChecker sent(Predicate<Packet<?>> test, String errorMessage);
+
+    /**
+     * Checks that this connection object got a Cardinal Components API sync packet sent through it
+     *
+     * @param synced the entity on which the component update occurred
+     * @param key    the key object representing the type of component that got synced
+     * @param expect assertions for the content of the buffer
+     * @return       a {@link PacketSequenceChecker} to perform advanced checks on matching packets
+     */
+    PacketSequenceChecker sentEntityComponentUpdate(@Nullable Entity synced, ComponentKey<?> key, Consumer<ByteBufChecker> expect);
 
     void sentPackets(Consumer<Queue<Packet<?>>> test);
 

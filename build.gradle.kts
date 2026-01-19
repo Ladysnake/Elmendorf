@@ -1,6 +1,6 @@
 plugins {
 	id("net.fabricmc.fabric-loom") version "1.14-SNAPSHOT"
-	id("io.github.ladysnake.chenille") version "0.18.0-SNAPSHOT"
+	id("io.github.ladysnake.chenille") version "0.18.0"
 }
 
 version = providers.gradleProperty("mod_version").get()
@@ -11,9 +11,7 @@ chenille {
 		withLadysnakeMaven()
 		withGithubRelease()
 	}
-	configureTestmod {
-//		withDependencyConfiguration()
-	}
+	configureTestmod()
 
 	javaVersion = providers.gradleProperty("java_version").get().toInt()
 	license = "MIT"
@@ -43,8 +41,8 @@ dependencies {
 	api(fabricApi.module("fabric-gametest-api-v1", fabricApiVersion))
 	implementation(fabricApi.module("fabric-registry-sync-v0", fabricApiVersion))
 	localImplementation(fabricApi.module("fabric-networking-api-v1", fabricApiVersion))
-//	compileOnly("org.ladysnake.cardinal-components-api:cardinal-components-base:${ccaVersion}")
-//	compileOnly("org.ladysnake.cardinal-components-api:cardinal-components-entity:${ccaVersion}")
+	compileOnly("org.ladysnake.cardinal-components-api:cardinal-components-base:${ccaVersion}")
+	compileOnly("org.ladysnake.cardinal-components-api:cardinal-components-entity:${ccaVersion}")
 	"testmodImplementation"(sourceSets.main.get().output)
 	annotationProcessor(dummy.output)
 }

@@ -21,58 +21,36 @@
  * OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-///*
-// * Elmendorf
-// * Copyright (C) 2021-2024 Ladysnake
-// *
-// * Permission is hereby granted, free of charge, to any person obtaining a copy
-// * of this software and associated documentation files (the "Software"), to deal
-// * in the Software without restriction, including without limitation the rights
-// * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// * copies of the Software, and to permit persons to whom the Software is
-// * furnished to do so, subject to the following conditions:
-// *
-// * The above copyright notice and this permission notice shall be included in all
-// * copies or substantial portions of the Software.
-// *
-// * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-// * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-// * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
-// * OR OTHER DEALINGS IN THE SOFTWARE.
-// */
-//package org.ladysnake.ripstop;
-//
-//import net.minecraft.world.entity.animal.axolotl.Axolotl;
-//import net.minecraft.network.RegistryFriendlyByteBuf;
-//import net.minecraft.server.level.ServerPlayer;
-//import net.minecraft.resources.Identifier;
-//import org.ladysnake.cca.api.v3.component.Component;
-//import org.ladysnake.cca.api.v3.component.ComponentKey;
-//import org.ladysnake.cca.api.v3.component.ComponentRegistry;
-//import org.ladysnake.cca.api.v3.component.TransientComponent;
-//import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
-//import org.ladysnake.cca.api.v3.entity.EntityComponentFactoryRegistry;
-//import org.ladysnake.cca.api.v3.entity.EntityComponentInitializer;
-//
-//public class RipstopComponents implements EntityComponentInitializer {
-//    public static final ComponentKey<Component> TEST = ComponentRegistry.getOrCreate(Identifier.of("ripstop", "test-component"), Component.class);
-//
-//    @Override
-//    public void registerEntityComponentFactories(EntityComponentFactoryRegistry registry) {
-//        class Impl extends TransientComponent.SimpleImpl implements AutoSyncedComponent {
-//            @Override
-//            public void writeSyncPacket(RegistryFriendlyByteBuf buf, ServerPlayer recipient) {
-//
-//            }
-//
-//            @Override
-//            public void applySyncPacket(RegistryFriendlyByteBuf buf) {
-//
-//            }
-//        }
-//        registry.registerFor(Axolotl.class, TEST, a -> new Impl());
-//    }
-//}
+package org.ladysnake.ripstop;
+
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.animal.axolotl.Axolotl;
+import org.ladysnake.cca.api.v3.component.Component;
+import org.ladysnake.cca.api.v3.component.ComponentKey;
+import org.ladysnake.cca.api.v3.component.ComponentRegistry;
+import org.ladysnake.cca.api.v3.component.TransientComponent;
+import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
+import org.ladysnake.cca.api.v3.entity.EntityComponentFactoryRegistry;
+import org.ladysnake.cca.api.v3.entity.EntityComponentInitializer;
+
+public class RipstopComponents implements EntityComponentInitializer {
+    public static final ComponentKey<Component> TEST = ComponentRegistry.getOrCreate(Identifier.fromNamespaceAndPath("ripstop", "test-component"), Component.class);
+
+    @Override
+    public void registerEntityComponentFactories(EntityComponentFactoryRegistry registry) {
+        class Impl extends TransientComponent.SimpleImpl implements AutoSyncedComponent {
+            @Override
+            public void writeSyncPacket(RegistryFriendlyByteBuf buf, ServerPlayer recipient) {
+
+            }
+
+            @Override
+            public void applySyncPacket(RegistryFriendlyByteBuf buf) {
+
+            }
+        }
+        registry.registerFor(Axolotl.class, TEST, a -> new Impl());
+    }
+}

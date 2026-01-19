@@ -24,14 +24,19 @@ package org.ladysnake.elmendorf.impl;
 
 import io.netty.channel.ChannelFutureListener;
 import net.minecraft.gametest.framework.GameTestAssertException;
+import net.minecraft.gametest.framework.GameTestException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.ladysnake.cca.api.v3.component.ComponentKey;
+import org.ladysnake.cca.internal.base.ComponentUpdatePayload;
+import org.ladysnake.cca.internal.entity.CardinalComponentsEntity;
 import org.ladysnake.elmendorf.ByteBufChecker;
 import org.ladysnake.elmendorf.CheckedConnection;
 import org.ladysnake.elmendorf.ConnectionTestConfiguration;
@@ -140,6 +145,26 @@ public final class TestableMockClientConnection extends MockClientConnection imp
         return new PacketSequenceCheckerImpl(errorMessage, packets);
     }
 
+    // Don't access internal API at home kids
+    @SuppressWarnings("UnstableApiUsage")
+    @Override
+    public PacketSequenceChecker sentEntityComponentUpdate(@Nullable Entity synced, ComponentKey<?> key, Consumer<ByteBufChecker> expect) {
+        if (synced != null) ctx.assertTrue("Expected " + synced + " to provide component " + key.getId(), key.isProvidedBy(synced));
+        List<GameTestAssertException> suppressed = new ArrayList<>();
+        try {
+            return sent(
+                    TestableMockClientConnection.<ComponentUpdatePayload<Integer>>createCheckerTest(CardinalComponentsEntity.PACKET_ID, payload -> {
+                        ctx.assertTrue("Expected component update to target entity " + synced, synced == null || payload.targetData() == synced.getId());
+                        expect.accept(new ByteBufChecker(payload.buf(), ctx));
+                    }, suppressed),
+                    "Expected sync packet for component " + key.getId()
+            );
+        } catch (GameTestException e) {
+            suppressed.forEach(e::addSuppressed);
+            throw e;
+        }
+    }
+
     @Override
     public void sentPackets(Consumer<Queue<Packet<?>>> test) {
         test.accept(this.packetQueue.stream().map(p -> p.packet).collect(Collectors.toCollection(ArrayDeque::new)));
@@ -193,6 +218,27 @@ public final class TestableMockClientConnection extends MockClientConnection imp
             return thenSent(delay, packet -> packet instanceof ClientboundCustomPayloadPacket(
                     CustomPacketPayload payload)
                     && Objects.equals(payload.type(), channelId), "Expected packet for channel " + channelId);
+        }
+
+        // Don't access internal API at home kids
+        @SuppressWarnings("UnstableApiUsage")
+        @Override
+        public PacketSequenceChecker thenSentComponentUpdate(Delay delay, @Nullable Entity synced, ComponentKey<?> key, Consumer<ByteBufChecker> expect) {
+            if (synced != null) ctx.assertTrue("Expected " + synced + " to provide component " + key.getId(), key.isProvidedBy(synced));
+            List<GameTestAssertException> suppressed = new ArrayList<>();
+            try {
+                return this.thenSent(
+                        delay,
+                        TestableMockClientConnection.<ComponentUpdatePayload<Integer>>createCheckerTest(CardinalComponentsEntity.PACKET_ID, payload -> {
+                            ctx.assertTrue("Expected component update to target entity " + synced, synced == null || payload.targetData() == synced.getId());
+                            expect.accept(new ByteBufChecker(payload.buf(), ctx));
+                        }, suppressed),
+                        "Expected sync packet for component " + key.getId()
+                );
+            } catch (GameTestException e) {
+                suppressed.forEach(e::addSuppressed);
+                throw e;
+            }
         }
 
         @Override
