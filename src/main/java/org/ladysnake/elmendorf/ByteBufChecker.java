@@ -29,7 +29,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.ChunkSectionPos;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
@@ -54,10 +53,6 @@ public final class ByteBufChecker {
 
     public ByteBufChecker checkChunkPos(@Nullable ChunkPos expected) {
         return check(ChunkPos.class, expected, b -> b.readChunkPos());
-    }
-
-    public ByteBufChecker checkChunkSectionPos(@Nullable ChunkSectionPos expected) {
-        return check(ChunkSectionPos.class, expected, PacketByteBuf::readChunkSectionPos);
     }
 
     public ByteBufChecker checkBoolean(@Nullable Boolean expected) {
